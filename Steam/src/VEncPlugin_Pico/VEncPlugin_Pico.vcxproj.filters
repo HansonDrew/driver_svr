@@ -1,0 +1,468 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="RVR">
+      <UniqueIdentifier>{e103daa6-31a9-414f-9487-eb1e0debafd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RVR\RVRPlugin">
+      <UniqueIdentifier>{d0f15961-44e0-4824-8521-1620aa83a815}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RVR\RVRUtils">
+      <UniqueIdentifier>{2f5b20a3-af53-44e6-a3d5-c4f8a172bae9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="amf">
+      <UniqueIdentifier>{85722551-ebcd-4045-af65-daab430f7d86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="amf\public">
+      <UniqueIdentifier>{de5049d9-98be-4c6f-bbb3-3f2b1e2e8c45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="amf\public\include">
+      <UniqueIdentifier>{59743fcc-2e52-4105-bd43-c758282aa708}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="amf\public\include\core">
+      <UniqueIdentifier>{1a82e781-ba6c-48f8-b540-f6a50f176a98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="amf\public\include\component">
+      <UniqueIdentifier>{62e5fea3-5483-4c8f-9282-457cacfbc098}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="amf\public\common">
+      <UniqueIdentifier>{74d64b52-a292-44be-b3cb-2c1dd2dfdd8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EncoderComponents">
+      <UniqueIdentifier>{edf02879-7180-451f-8d5e-fd6ee85ee9e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EncoderComponents\AMFComponents">
+      <UniqueIdentifier>{88c69ad7-c0f4-4dd8-92d6-369c7618591b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EncoderComponents\NVENCComponents">
+      <UniqueIdentifier>{4033932b-8407-4ca9-a73a-4a344f5a6d40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pxrTool">
+      <UniqueIdentifier>{d554c3b2-5945-4825-a601-041e7bb2c4f4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalDLLContext.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RVR\RVRPlugin\IVEncPlugin.h">
+      <Filter>RVR\RVRPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="RVR\RVRPlugin\RVRPluginDefinitions.h">
+      <Filter>RVR\RVRPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="RVR\RVRPlugin\IEncOutputSink.h">
+      <Filter>RVR\RVRPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="RVR\RVRUtils\RVRUtils.h">
+      <Filter>RVR\RVRUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="RVR\RVRUtils\RVRLogger.h">
+      <Filter>RVR\RVRUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\AMFFactory.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\AMFMath.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\AMFSTL.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\ByteArray.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\CurrentTime.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\CurrentTimeImpl.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\DataStream.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\DataStreamFile.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\DataStreamMemory.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\InterfaceImpl.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\IOCapsImpl.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\ObservableImpl.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\PropertyStorageExImpl.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\PropertyStorageImpl.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\Thread.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\common\TraceAdapter.h">
+      <Filter>amf\public\common</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\DisplayCapture.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\FFMPEGAudioConverter.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\FFMPEGAudioDecoder.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\FFMPEGAudioEncoder.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\FFMPEGComponents.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\FFMPEGFileDemuxer.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\FFMPEGFileMuxer.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\FFMPEGVideoDecoder.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\MediaSource.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\PreAnalysis.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\VideoCapture.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\VideoConverter.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\VideoDecoderUVD.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\VideoEncoderHEVC.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\VideoEncoderVCE.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\VideoStitch.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\ZCamLiveStream.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\Ambisonic2SRenderer.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\AudioCapture.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\Capture.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\ChromaKey.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\ColorSpace.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\Component.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\components\ComponentCaps.h">
+      <Filter>amf\public\include\component</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Dump.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Factory.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Interface.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Plane.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Platform.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\PropertyStorage.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\PropertyStorageEx.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Result.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Surface.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Trace.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Variant.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Version.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\AudioBuffer.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Buffer.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Compute.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\ComputeFactory.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Context.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Data.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="amf\public\include\core\Debug.h">
+      <Filter>amf\public\include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\VideoEncoderConfig.h">
+      <Filter>EncoderComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\VideoEncoder.h">
+      <Filter>EncoderComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\AMFComponents\VideoEncoderVCE.h">
+      <Filter>EncoderComponents\AMFComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\AMFComponents\AMFTextureEncoder.h">
+      <Filter>EncoderComponents\AMFComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\AMFComponents\AMFTypeDefines.h">
+      <Filter>EncoderComponents\AMFComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\VideoEncoderFrameConfig.h">
+      <Filter>EncoderComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\NVENCComponents\NvEncoderD3D11.h">
+      <Filter>EncoderComponents\NVENCComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\NVENCComponents\NvEncoder.h">
+      <Filter>EncoderComponents\NVENCComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\NVENCComponents\NvEncoderCLIOptions.h">
+      <Filter>EncoderComponents\NVENCComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\NVENCComponents\VideoEncoderNVENC.h">
+      <Filter>EncoderComponents\NVENCComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="pxrTool\config_reader.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="pxrTool\filetool.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="pxrTool\stringtool.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="pxrTool\TimeTool.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="pxrTool\LogTool.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="pxrTool\Semaphore.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="pxrTool\CachePool.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="VEncPluginPico.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalDLLConfig.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\AsyncDataProcessor.h">
+      <Filter>EncoderComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="CheckGraphicCard.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RtpPacket.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="pxrTool\DebugHelper.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\D3DHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="EncoderComponent\RgbToNV12.h">
+      <Filter>EncoderComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="UpdSocket.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="RtpQualityHelper.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="fec_define.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+    <ClInclude Include="fec_packet.h">
+      <Filter>pxrTool</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalDLLContext.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="IVEncPlugin.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\public\common\AMFSTL.cpp">
+      <Filter>amf\public\common</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\public\common\CurrentTimeImpl.cpp">
+      <Filter>amf\public\common</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\public\common\DataStreamFactory.cpp">
+      <Filter>amf\public\common</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\public\common\DataStreamFile.cpp">
+      <Filter>amf\public\common</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\public\common\DataStreamMemory.cpp">
+      <Filter>amf\public\common</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\public\common\IOCapsImpl.cpp">
+      <Filter>amf\public\common</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\public\common\PropertyStorageExImpl.cpp">
+      <Filter>amf\public\common</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\public\common\Thread.cpp">
+      <Filter>amf\public\common</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\public\common\TraceAdapter.cpp">
+      <Filter>amf\public\common</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\public\common\AMFFactory.cpp">
+      <Filter>amf\public\common</Filter>
+    </ClCompile>
+    <ClCompile Include="amf\public\common\Windows\ThreadWindows.cpp">
+      <Filter>amf\public\common</Filter>
+    </ClCompile>
+    <ClCompile Include="EncoderComponent\VideoEncoderConfig.cpp">
+      <Filter>EncoderComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="EncoderComponent\VideoEncoder.cpp">
+      <Filter>EncoderComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="EncoderComponent\AMFComponents\VideoEncoderVCE.cpp">
+      <Filter>EncoderComponents\AMFComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="EncoderComponent\AMFComponents\AMFTextureEncoder.cpp">
+      <Filter>EncoderComponents\AMFComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="EncoderComponent\VideoEncoderFrameConfig.cpp">
+      <Filter>EncoderComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="EncoderComponent\NVENCComponents\NvEncoderD3D11.cpp">
+      <Filter>EncoderComponents\NVENCComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="EncoderComponent\NVENCComponents\NvEncoder.cpp">
+      <Filter>EncoderComponents\NVENCComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="EncoderComponent\NVENCComponents\VideoEncoderNVENC.cpp">
+      <Filter>EncoderComponents\NVENCComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="pxrTool\filetool.cpp">
+      <Filter>pxrTool</Filter>
+    </ClCompile>
+    <ClCompile Include="pxrTool\stringtool.cpp">
+      <Filter>pxrTool</Filter>
+    </ClCompile>
+    <ClCompile Include="pxrTool\TimeTool.cpp">
+      <Filter>pxrTool</Filter>
+    </ClCompile>
+    <ClCompile Include="pxrTool\LogTool.cpp">
+      <Filter>pxrTool</Filter>
+    </ClCompile>
+    <ClCompile Include="pxrTool\config_reader.cpp">
+      <Filter>pxrTool</Filter>
+    </ClCompile>
+    <ClCompile Include="pxrTool\Semaphore.cpp">
+      <Filter>pxrTool</Filter>
+    </ClCompile>
+    <ClCompile Include="pxrTool\CachePool.cpp">
+      <Filter>pxrTool</Filter>
+    </ClCompile>
+    <ClCompile Include="VEncPluginPico.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalDLLConfig.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EncoderComponent\AsyncDataProcessor.cpp">
+      <Filter>EncoderComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="RtpPacket.cpp">
+      <Filter>pxrTool</Filter>
+    </ClCompile>
+    <ClCompile Include="EncoderComponent\D3DHelper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EncoderComponent\RgbToNV12.cpp">
+      <Filter>EncoderComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="UpdSocket.cpp">
+      <Filter>pxrTool</Filter>
+    </ClCompile>
+    <ClCompile Include="RtpQualityHelper.cpp">
+      <Filter>pxrTool</Filter>
+    </ClCompile>
+    <ClCompile Include="fec_packet.cpp">
+      <Filter>pxrTool</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

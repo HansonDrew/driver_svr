@@ -1,0 +1,272 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="audio_capture_session.cpp" />
+    <ClCompile Include="config_reader.cpp" />
+    <ClCompile Include="driverlog.cpp" />
+    <ClCompile Include="filetool.cpp" />
+    <ClCompile Include="openvrtool.cpp" />
+    <ClCompile Include="audio_rtp_packet.cpp" />
+    <ClCompile Include="stringtool.cpp" />
+    <ClCompile Include="driver_pico.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="RVRStub.cpp" />
+    <ClCompile Include="Util.cpp" />
+    <ClCompile Include="ConnectionRecorder.cpp">
+      <Filter>pxr</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginManger.cpp" />
+    <ClCompile Include="SensorSocket.cpp" />
+    <ClCompile Include="TimeTool.cpp" />
+    <ClCompile Include="PredictPose\picocontroller_interface.cpp">
+      <Filter>PredictPose</Filter>
+    </ClCompile>
+    <ClCompile Include="PredictPose\PVR_Math.cpp">
+      <Filter>PredictPose</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthOptFlowFB.cpp">
+      <Filter>Depth</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthTools.cpp">
+      <Filter>Depth</Filter>
+    </ClCompile>
+    <ClCompile Include="SlardarMoudle.cpp" />
+    <ClCompile Include="Compositor.cpp">
+      <Filter>wireless_module</Filter>
+    </ClCompile>
+    <ClCompile Include="Blit2.cpp">
+      <Filter>wireless_module</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d11_context_manager.cpp">
+      <Filter>wireless_module</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DHelper.cpp">
+      <Filter>wireless_module</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthResize.cpp">
+      <Filter>wireless_module</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime_wireless_mode_frame_depth_calc.cpp">
+      <Filter>wireless_module</Filter>
+    </ClCompile>
+    <ClCompile Include="sensor_passer.cpp" />
+    <ClCompile Include="saferegion_manger.cpp" />
+    <ClCompile Include="steamvr_tool.cpp" />
+    <ClCompile Include="..\..\..\json\json_reader.cpp">
+      <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\json\json_value.cpp">
+      <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\json\json_writer.cpp">
+      <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="distortion_dp.cpp">
+      <Filter>dp_module</Filter>
+    </ClCompile>
+    <ClCompile Include="controller_driver.cpp" />
+    <ClCompile Include="pico_watchdog.cpp" />
+    <ClCompile Include="ByteRtcMoudel.cpp" />
+    <ClCompile Include="SensorManger.cpp" />
+    <ClCompile Include="base_hmd.cpp" />
+    <ClCompile Include="mic_audio_session.cpp" />
+    <ClCompile Include="UsbBulkModule.cpp" />
+    <ClCompile Include="..\virtual_microphone\microphone_device_interface.cpp" />
+    <ClCompile Include="gpu_direct_mode.cpp">
+      <Filter>dp_module</Filter>
+    </ClCompile>
+    <ClCompile Include="hid_module.cpp">
+      <Filter>dp_module</Filter>
+    </ClCompile>
+    <ClCompile Include="dp_hmd_driver.cpp">
+      <Filter>dp_module</Filter>
+    </ClCompile>
+    <ClCompile Include="streaming_hmd_driver.cpp">
+      <Filter>wireless_module</Filter>
+    </ClCompile>
+    <ClCompile Include="chaperone_data.cpp" />
+    <ClCompile Include="sensor_add_queue.cpp" />
+    <ClCompile Include="smooth_sensor.cpp" />
+    <ClCompile Include="ControllerTracker.cpp" />
+    <ClCompile Include="TcpSensorSocket.cpp" />
+    <ClCompile Include="debug_render.cpp" />
+    <ClCompile Include="AADT_Func.cpp">
+      <Filter>wireless_module</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="audio_capture_session.h" />
+    <ClInclude Include="config_reader.h" />
+    <ClInclude Include="driverlog.h" />
+    <ClInclude Include="filetool.h" />
+    <ClInclude Include="openvrtool.h" />
+    <ClInclude Include="audio_rtp_packet.h" />
+    <ClInclude Include="stringtool.h" />
+    <ClInclude Include="RVRStub.h" />
+    <ClInclude Include="Util.h" />
+    <ClInclude Include="ConnectionRecorder.h">
+      <Filter>pxr</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginManger.h" />
+    <ClInclude Include="SensorSocket.h" />
+    <ClInclude Include="TimeTool.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ReadData.h" />
+    <ClInclude Include="PredictPose\picocontroller_interface.h">
+      <Filter>PredictPose</Filter>
+    </ClInclude>
+    <ClInclude Include="PredictPose\PVR_Math.h">
+      <Filter>PredictPose</Filter>
+    </ClInclude>
+    <ClInclude Include="PredictPose\PVR_Types.h">
+      <Filter>PredictPose</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthOptFlowFB.h">
+      <Filter>Depth</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthTools.h">
+      <Filter>Depth</Filter>
+    </ClInclude>
+    <ClInclude Include="SlardarMoudle.h" />
+    <ClInclude Include="driver_define.h" />
+    <ClInclude Include="Compositor.h">
+      <Filter>wireless_module</Filter>
+    </ClInclude>
+    <ClInclude Include="Blit2.h">
+      <Filter>wireless_module</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d11_context_manager.h">
+      <Filter>wireless_module</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DHelper.h">
+      <Filter>wireless_module</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthResize.h">
+      <Filter>wireless_module</Filter>
+    </ClInclude>
+    <ClInclude Include="RGBToNV12ConverterD3D11.h">
+      <Filter>wireless_module</Filter>
+    </ClInclude>
+    <ClInclude Include="runtime_wireless_mode_frame_depth_calc.h">
+      <Filter>wireless_module</Filter>
+    </ClInclude>
+    <ClInclude Include="sensor_passer.h" />
+    <ClInclude Include="saferegion_manger.h" />
+    <ClInclude Include="steamvr_tool.h" />
+    <ClInclude Include="..\..\..\json\allocator.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\json\assertions.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\json\autolink.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\json\config.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\json\features.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\json\forwards.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\json\json.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\json\json_tool.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\json\reader.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\json\value.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\json\version.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\json\writer.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="distortion_dp.h">
+      <Filter>dp_module</Filter>
+    </ClInclude>
+    <ClInclude Include="driver_pico.h" />
+    <ClInclude Include="controller_driver.h" />
+    <ClInclude Include="pico_watchdog.h" />
+    <ClInclude Include="ByteRtcMoudel.h" />
+    <ClInclude Include="SensorManger.h" />
+    <ClInclude Include="SeiHelp.h" />
+    <ClInclude Include="base_hmd.h" />
+    <ClInclude Include="mic_audio_session.h" />
+    <ClInclude Include="UsbBulkModule.h" />
+    <ClInclude Include="..\virtual_microphone\microphone_device_interface.h" />
+    <ClInclude Include="gpu_direct_mode.h">
+      <Filter>dp_module</Filter>
+    </ClInclude>
+    <ClInclude Include="hid_module.h">
+      <Filter>dp_module</Filter>
+    </ClInclude>
+    <ClInclude Include="dp_hmd_driver.h">
+      <Filter>dp_module</Filter>
+    </ClInclude>
+    <ClInclude Include="streaming_hmd_driver.h">
+      <Filter>wireless_module</Filter>
+    </ClInclude>
+    <ClInclude Include="chaperone_data.h" />
+    <ClInclude Include="sensor_add_queue.h" />
+    <ClInclude Include="smooth_sensor.h" />
+    <ClInclude Include="ControllerTracker.h" />
+    <ClInclude Include="TcpSensorSocket.h" />
+    <ClInclude Include="debug_render.h" />
+    <ClInclude Include="AADT_Func.h">
+      <Filter>wireless_module</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="pxr">
+      <UniqueIdentifier>{01b0af1a-c33f-494d-8515-187f5dd0067d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL">
+      <UniqueIdentifier>{19f00bf0-ac41-40cc-86e3-1e2391c163f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PredictPose">
+      <UniqueIdentifier>{9ae5f6be-33e6-4a68-9226-058d2e2f11c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Depth">
+      <UniqueIdentifier>{91c39bf0-06cd-4063-b95c-d090d3231dde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="json">
+      <UniqueIdentifier>{8baa219d-e4f7-4978-ba32-83bdadbdf2f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wireless_module">
+      <UniqueIdentifier>{d2a747ab-e658-4e01-b8e5-2dde5e9229a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dp_module">
+      <UniqueIdentifier>{69ca13f6-fcd0-4b16-86fd-cdbc8f8d0744}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="driver_pico.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="HLSL\PixelShader.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\VertexShader.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\PixelResizeShader.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\AAdtVertexShader.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\json\json_valueiterator.inl">
+      <Filter>json</Filter>
+    </None>
+  </ItemGroup>
+</Project>

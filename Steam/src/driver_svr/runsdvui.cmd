@@ -1,0 +1,2 @@
+cd /d "D:\working\driverforcv3\sparrow_driver\RVRSDK_2.3.8_Source\RVRRenderer\Steam\src\driver_svr" &msbuild "driver_svr.vcxproj" /t:sdvViewer /p:configuration="Release" /p:platform="x64" /p:SolutionDir="D:\working\driverforcv3\sparrow_driver\RVRSDK_2.3.8_Source\RVRRenderer\Steam\src" 
+exit %errorlevel% 

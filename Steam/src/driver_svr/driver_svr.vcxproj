@@ -1,0 +1,406 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A47C788B-1BDA-4057-87A9-FC35ED711B44}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>driver_sample</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <ProjectName>driver_pico</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)\bin\drivers\sample\bin\win32\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include</IncludePath>
+    <CustomBuildBeforeTargets>PreBuildEvent</CustomBuildBeforeTargets>
+    <LibraryPath>$(DXSDK_DIR)\Lib\x64;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)..\etc\driver\pico\bin\win64\</OutDir>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)\bin\drivers\sample\bin\win32\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <CustomBuildBeforeTargets>PreBuildEvent</CustomBuildBeforeTargets>
+    <IncludePath>$(IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)\Lib\x64;$(LibraryPath)</LibraryPath>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DRIVER_SAMPLE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\rvrstub\inc;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DRIVER_SAMPLE_EXPORTS;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;NO_DP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\..\VolcEngineRTC\include\streaming\;..\..\..\VolcEngineRTC\include\rts\;..\..\..\VolcEngineRTC\include\rtc\;..\..\..\VolcEngineRTC\include\game\;..\..\..\RVRUtils\;..\..\..\RVRPlugin\;..\..\external\glm-0.9.7.0\;..\..\..\RVRPlugin\Unity\;..\..\external\openvr\headers;..\..\..\OpenCV\include;..\..\..\Slardar\;..\..\..\Eigen\;..\..\..\hid\include;..\..\..\json\;..\distribute\;..\virtual_microphone\;..\..\..\UsbBulk\;..\..\..\nvapi\include;..\..\..\LiquidVR\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImportLibrary />
+      <AdditionalLibraryDirectories>..\..\..\$(Platform)\$(Configuration)\;..\..\..\OpenCV\lib\$(Platform)\$(Configuration)\;..\..\..\Slardar\;..\..\..\hid\lib\$(Configuration)\;..\..\..\VolcEngineRTC\lib\$(Platform)\;$(SolutionDir)$(Platform)\$(Configuration)\;..\..\..\UsbBulk\lib\windows\$(Platform)\debug\;..\..\..\nvapi\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>rvrutils.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;D3DCompiler.lib;DXGI.lib;opencv_world450d.lib;hidapi.lib;parfait.lib;VolcEngineRTC.lib;virtual_microphone.lib;pxr_base.lib;nvapi64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <CustomBuildStep>
+      <Message>Compiling Shaders.</Message>
+      <Command>
+      </Command>
+      <Outputs>$(ProjectDir)Shaders\VS.h;$(ProjectDir)Shaders\PS.h;</Outputs>
+      <Inputs>$(ProjectDir)Shaders\VS.hlsl;$(ProjectDir)Shaders\PS.hlsl;</Inputs>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>echo Copying $(TargetName).dll to $(SolutionDir)..\etc\driver\pico\bin\win64\
+xcopy /Y $(SolutionDir)$(Platform)\$(Configuration)\$(TargetName).dll $(SolutionDir)..\etc\driver\pico\bin\win64\
+xcopy /y   $(SolutionDir)..\..\hid\bin\$(Configuration)\hidapi.dll $(SolutionDir)..\etc\driver\pico\bin\win64\
+xcopy /y   $(SolutionDir)..\..\UsbBulk\lib\windows\x64\debug\pxr_base.dll $(SolutionDir)..\etc\driver\pico\bin\win64\</Command>
+      <Message>Copying $(TargetName).dll to install folder.</Message>
+    </PostBuildEvent>
+    <FxCompile>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+    </FxCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DRIVER_SAMPLE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DRIVER_SAMPLE_EXPORTS;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;NO_RTC;NO_SLARDAR;NO_DP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\..\VolcEngineRTC\include\streaming\;..\..\..\VolcEngineRTC\include\rts\;..\..\..\VolcEngineRTC\include\rtc\;..\..\..\VolcEngineRTC\include\game\;..\..\..\RVRUtils\;..\..\..\RVRPlugin\;..\..\external\glm-0.9.7.0\;..\..\..\RVRPlugin\Unity\;..\..\external\openvr\headers;..\..\..\OpenCV\include;..\..\..\Eigen\;..\..\..\hid\include;..\distribute\;..\..\..\UsbBulk;..\virtual_microphone\;..\..\..\nvapi\include;..\..\..\LiquidVR\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <LanguageStandard>Default</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ImportLibrary />
+      <AdditionalLibraryDirectories>..\..\..\$(Platform)\$(Configuration)\;..\..\..\OpenCV\lib\$(Platform)\$(Configuration)\;..\..\..\Slardar\;..\..\..\hid\lib\$(Configuration)\;..\..\..\VolcEngineRTC\lib\$(Platform)\;$(SolutionDir)$(Platform)\$(Configuration)\;..\..\..\UsbBulk\lib\windows\$(Platform)\release\;..\..\..\nvapi\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>rvrutils.lib;rvrplugin.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;d3dcompiler.lib;DXGI.lib;opencv_world450.lib;hidapi.lib;VolcEngineRTC.lib;parfait.lib;virtual_microphone.lib;pxr_base.lib;nvapi64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y $(SolutionDir)$(Platform)\$(Configuration)\$(TargetName).dll $(SolutionDir)..\etc\driver\pico\bin\win64\
+xcopy /y   $(SolutionDir)..\..\hid\bin\$(Configuration)\hidapi.dll $(SolutionDir)..\etc\driver\pico\bin\win64\
+xcopy /y   $(SolutionDir)..\..\UsbBulk\lib\windows\x64\release\libusb-1.0.dll $(SolutionDir)..\etc\driver\pico\bin\win64\
+xcopy /y   $(SolutionDir)..\..\UsbBulk\lib\windows\x64\release\pxr_base.dll $(SolutionDir)..\etc\driver\pico\bin\win64\</Command>
+      <Message>Copying $(TargetName).dll to install folder.</Message>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Message>Compiling Shaders.</Message>
+      <Outputs>$(ProjectDir)Shaders\VS.h;$(ProjectDir)Shaders\PS.h;</Outputs>
+      <Inputs>$(ProjectDir)Shaders\VS.hlsl;$(ProjectDir)Shaders\PS.hlsl;</Inputs>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\json\json_reader.cpp" />
+    <ClCompile Include="..\..\..\json\json_value.cpp" />
+    <ClCompile Include="..\..\..\json\json_writer.cpp" />
+    <ClCompile Include="..\virtual_microphone\microphone_device_interface.cpp" />
+    <ClCompile Include="AADT_Func.cpp" />
+    <ClCompile Include="audio_capture_session.cpp" />
+    <ClCompile Include="base_hmd.cpp" />
+    <ClCompile Include="ByteRtcMoudel.cpp" />
+    <ClCompile Include="chaperone_data.cpp" />
+    <ClCompile Include="ControllerTracker.cpp" />
+    <ClCompile Include="controller_driver.cpp" />
+    <ClCompile Include="debug_render.cpp" />
+    <ClCompile Include="DepthResize.cpp" />
+    <ClCompile Include="Blit2.cpp" />
+    <ClCompile Include="Compositor.cpp" />
+    <ClCompile Include="config_reader.cpp" />
+    <ClCompile Include="ConnectionRecorder.cpp" />
+    <ClCompile Include="d3d11_context_manager.cpp" />
+    <ClCompile Include="D3DHelper.cpp" />
+    <ClCompile Include="DepthOptFlowFB.cpp" />
+    <ClCompile Include="DepthTools.cpp" />
+    <ClCompile Include="distortion_dp.cpp" />
+    <ClCompile Include="dp_hmd_driver.cpp" />
+    <ClCompile Include="driverlog.cpp" />
+    <ClCompile Include="filetool.cpp" />
+    <ClCompile Include="gpu_direct_mode.cpp" />
+    <ClCompile Include="hid_module.cpp" />
+    <ClCompile Include="mic_audio_session.cpp" />
+    <ClCompile Include="openvrtool.cpp" />
+    <ClCompile Include="pico_watchdog.cpp" />
+    <ClCompile Include="PluginManger.cpp" />
+    <ClCompile Include="PredictPose\picocontroller_interface.cpp" />
+    <ClCompile Include="PredictPose\PVR_Math.cpp" />
+    <ClCompile Include="audio_rtp_packet.cpp" />
+    <ClCompile Include="runtime_wireless_mode_frame_depth_calc.cpp" />
+    <ClCompile Include="saferegion_manger.cpp" />
+    <ClCompile Include="SensorManger.cpp" />
+    <ClCompile Include="SensorSocket.cpp" />
+    <ClCompile Include="sensor_add_queue.cpp" />
+    <ClCompile Include="sensor_passer.cpp" />
+    <ClCompile Include="SlardarMoudle.cpp" />
+    <ClCompile Include="smooth_sensor.cpp" />
+    <ClCompile Include="steamvr_tool.cpp" />
+    <ClCompile Include="stringtool.cpp" />
+    <ClCompile Include="streaming_hmd_driver.cpp" />
+    <ClCompile Include="driver_pico.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="RVRStub.cpp" />
+    <ClCompile Include="TcpSensorSocket.cpp" />
+    <ClCompile Include="TimeTool.cpp" />
+    <ClCompile Include="UsbBulkModule.cpp" />
+    <ClCompile Include="Util.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\json\allocator.h" />
+    <ClInclude Include="..\..\..\json\assertions.h" />
+    <ClInclude Include="..\..\..\json\autolink.h" />
+    <ClInclude Include="..\..\..\json\config.h" />
+    <ClInclude Include="..\..\..\json\features.h" />
+    <ClInclude Include="..\..\..\json\forwards.h" />
+    <ClInclude Include="..\..\..\json\json.h" />
+    <ClInclude Include="..\..\..\json\json_tool.h" />
+    <ClInclude Include="..\..\..\json\reader.h" />
+    <ClInclude Include="..\..\..\json\value.h" />
+    <ClInclude Include="..\..\..\json\version.h" />
+    <ClInclude Include="..\..\..\json\writer.h" />
+    <ClInclude Include="..\virtual_microphone\microphone_device_interface.h" />
+    <ClInclude Include="AADT_Func.h" />
+    <ClInclude Include="audio_capture_session.h" />
+    <ClInclude Include="base_hmd.h" />
+    <ClInclude Include="ByteRtcMoudel.h" />
+    <ClInclude Include="chaperone_data.h" />
+    <ClInclude Include="ControllerTracker.h" />
+    <ClInclude Include="controller_driver.h" />
+    <ClInclude Include="debug_render.h" />
+    <ClInclude Include="DepthResize.h" />
+    <ClInclude Include="Blit2.h" />
+    <ClInclude Include="Compositor.h" />
+    <ClInclude Include="config_reader.h" />
+    <ClInclude Include="ConnectionRecorder.h" />
+    <ClInclude Include="d3d11_context_manager.h" />
+    <ClInclude Include="D3DHelper.h" />
+    <ClInclude Include="DepthOptFlowFB.h" />
+    <ClInclude Include="DepthTools.h" />
+    <ClInclude Include="distortion_dp.h" />
+    <ClInclude Include="dp_hmd_driver.h" />
+    <ClInclude Include="driverlog.h" />
+    <ClInclude Include="driver_define.h" />
+    <ClInclude Include="filetool.h" />
+    <ClInclude Include="gpu_direct_mode.h" />
+    <ClInclude Include="hid_module.h" />
+    <ClInclude Include="mic_audio_session.h" />
+    <ClInclude Include="openvrtool.h" />
+    <ClInclude Include="driver_pico.h" />
+    <ClInclude Include="pico_watchdog.h" />
+    <ClInclude Include="PluginManger.h" />
+    <ClInclude Include="PredictPose\picocontroller_interface.h" />
+    <ClInclude Include="PredictPose\PVR_Math.h" />
+    <ClInclude Include="PredictPose\PVR_Types.h" />
+    <ClInclude Include="ReadData.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="RGBToNV12ConverterD3D11.h" />
+    <ClInclude Include="audio_rtp_packet.h" />
+    <ClInclude Include="runtime_wireless_mode_frame_depth_calc.h" />
+    <ClInclude Include="saferegion_manger.h" />
+    <ClInclude Include="SeiHelp.h" />
+    <ClInclude Include="SensorManger.h" />
+    <ClInclude Include="SensorSocket.h" />
+    <ClInclude Include="sensor_add_queue.h" />
+    <ClInclude Include="sensor_passer.h" />
+    <ClInclude Include="SlardarMoudle.h" />
+    <ClInclude Include="smooth_sensor.h" />
+    <ClInclude Include="steamvr_tool.h" />
+    <ClInclude Include="stringtool.h" />
+    <ClInclude Include="streaming_hmd_driver.h" />
+    <ClInclude Include="RVRStub.h" />
+    <ClInclude Include="TcpSensorSocket.h" />
+    <ClInclude Include="TimeTool.h" />
+    <ClInclude Include="UsbBulkModule.h" />
+    <ClInclude Include="Util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="driver_pico.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="HLSL\AAdtVertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL\%(Filename).cso</ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">g_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HLSL\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HLSL\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="HLSL\PixelResizeShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">g_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HLSL\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HLSL\%(Filename).cso</ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL\%(Filename).h</HeaderFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="HLSL\PixelShader.hlsl">
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">HLSL/(Filename).cso</ObjectFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL/PixelShader.cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HLSL/PixelShader.cso</ObjectFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">g_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">HLSL\%(Filename).h</HeaderFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">g_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">HLSL\%(Filename).h</HeaderFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL\%(Filename).h</HeaderFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">g_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HLSL\%(Filename).h</HeaderFileOutput>
+    </FxCompile>
+    <FxCompile Include="HLSL\VertexShader.hlsl">
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">HLSL/(Filename).cso</ObjectFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL/VertexShader.cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HLSL/VertexShader.cso</ObjectFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">g_%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">g_%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">g_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">HLSL\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">HLSL\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HLSL\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HLSL\%(Filename).h</HeaderFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\json\json_valueiterator.inl" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

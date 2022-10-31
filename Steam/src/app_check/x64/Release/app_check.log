@@ -1,0 +1,10 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: 中间目录(x64\Release\)包含从另一个项目(safe_region.vcxproj)共享的文件。   这会导致错误的清除和重新生成行为。
+  app_check.cpp
+D:\working\driverforcv3\sparrow_driver\RVRSDK_2.3.8_Source\RVRRenderer\Steam\src\app_check\app_check.cpp(212,21): warning C4018: “<”: 有符号/无符号不匹配
+D:\working\driverforcv3\sparrow_driver\RVRSDK_2.3.8_Source\RVRRenderer\Steam\src\app_check\app_check.cpp(273,103): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\working\driverforcv3\sparrow_driver\RVRSDK_2.3.8_Source\RVRRenderer\Steam\src\app_check\app_check.cpp(289,50): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+  正在生成代码
+  Previous IPDB not found, fall back to full compilation.
+  All 280 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  app_check.vcxproj -> D:\working\driverforcv3\sparrow_driver\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\app_check.exe

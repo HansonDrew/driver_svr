@@ -1,0 +1,2 @@
+﻿  mictest.cpp
+D:\working\driverforcv3\sparrow_driver\RVRSDK_2.3.8_Source\RVRRenderer\Steam\src\mictest\mictest.cpp(16,48): error C2296: “<<”: 非法，左操作数包含“const char [19]”类型

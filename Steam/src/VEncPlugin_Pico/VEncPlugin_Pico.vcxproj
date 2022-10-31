@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{C1FD5898-1E79-4E3C-B825-FB55A19274A7}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>VEncPluginAMF</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>VEncPlugin</TargetName>
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>VEncPlugin</TargetName>
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IncludePath>$(IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)\Lib\x64;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>VEncPlugin</TargetName>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>VEncPlugin</TargetName>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include</IncludePath>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <LibraryPath>$(DXSDK_DIR)\Lib\x64;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>SPDLOG_HEADER_ONLY;WIN32;_DEBUG;VENCPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>$(ProjectDir)\RVR\lib\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>rvrutils.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;VENCPLUGIN_EXPORTS;_WINDOWS;_USRDLL;WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(ProjectDir)\amf\;$(ProjectDir)\nvmf\include\;..\..\..\Slardar\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>..\..\..\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>rvrutils.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;DXGI.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>echo Copying $(TargetName).dll to $(SolutionDir)..\etc\driver\pico\bin\win64\
+xcopy /Y $(SolutionDir)$(Platform)\$(Configuration)\$(TargetName).dll $(SolutionDir)..\etc\driver\pico\bin\win64\
+</Command>
+      <Message>Copying $(TargetName).dll to install folder.</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>SPDLOG_HEADER_ONLY;WIN32;NDEBUG;VENCPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>$(ProjectDir)\RVR\lib\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>rvrutils.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;VENCPLUGIN_EXPORTS;_WINDOWS;_USRDLL;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(ProjectDir)\amf\;$(ProjectDir)\nvmf\include\;..\..\..\Slardar\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>..\..\..\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>rvrutils.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;DXGI.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y $(SolutionDir)$(Platform)\$(Configuration)\$(TargetName).dll $(SolutionDir)..\etc\driver\pico\bin\win64\</Command>
+      <Message>Copying $(TargetName).dll to install folder.</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="amf\public\common\AMFFactory.h" />
+    <ClInclude Include="amf\public\common\AMFMath.h" />
+    <ClInclude Include="amf\public\common\AMFSTL.h" />
+    <ClInclude Include="amf\public\common\ByteArray.h" />
+    <ClInclude Include="amf\public\common\CurrentTime.h" />
+    <ClInclude Include="amf\public\common\CurrentTimeImpl.h" />
+    <ClInclude Include="amf\public\common\DataStream.h" />
+    <ClInclude Include="amf\public\common\DataStreamFile.h" />
+    <ClInclude Include="amf\public\common\DataStreamMemory.h" />
+    <ClInclude Include="amf\public\common\InterfaceImpl.h" />
+    <ClInclude Include="amf\public\common\IOCapsImpl.h" />
+    <ClInclude Include="amf\public\common\ObservableImpl.h" />
+    <ClInclude Include="amf\public\common\PropertyStorageExImpl.h" />
+    <ClInclude Include="amf\public\common\PropertyStorageImpl.h" />
+    <ClInclude Include="amf\public\common\Thread.h" />
+    <ClInclude Include="amf\public\common\TraceAdapter.h" />
+    <ClInclude Include="amf\public\include\components\Ambisonic2SRenderer.h" />
+    <ClInclude Include="amf\public\include\components\AudioCapture.h" />
+    <ClInclude Include="amf\public\include\components\Capture.h" />
+    <ClInclude Include="amf\public\include\components\ChromaKey.h" />
+    <ClInclude Include="amf\public\include\components\ColorSpace.h" />
+    <ClInclude Include="amf\public\include\components\Component.h" />
+    <ClInclude Include="amf\public\include\components\ComponentCaps.h" />
+    <ClInclude Include="amf\public\include\components\DisplayCapture.h" />
+    <ClInclude Include="amf\public\include\components\FFMPEGAudioConverter.h" />
+    <ClInclude Include="amf\public\include\components\FFMPEGAudioDecoder.h" />
+    <ClInclude Include="amf\public\include\components\FFMPEGAudioEncoder.h" />
+    <ClInclude Include="amf\public\include\components\FFMPEGComponents.h" />
+    <ClInclude Include="amf\public\include\components\FFMPEGFileDemuxer.h" />
+    <ClInclude Include="amf\public\include\components\FFMPEGFileMuxer.h" />
+    <ClInclude Include="amf\public\include\components\FFMPEGVideoDecoder.h" />
+    <ClInclude Include="amf\public\include\components\MediaSource.h" />
+    <ClInclude Include="amf\public\include\components\PreAnalysis.h" />
+    <ClInclude Include="amf\public\include\components\VideoCapture.h" />
+    <ClInclude Include="amf\public\include\components\VideoConverter.h" />
+    <ClInclude Include="amf\public\include\components\VideoDecoderUVD.h" />
+    <ClInclude Include="amf\public\include\components\VideoEncoderHEVC.h" />
+    <ClInclude Include="amf\public\include\components\VideoEncoderVCE.h" />
+    <ClInclude Include="amf\public\include\components\VideoStitch.h" />
+    <ClInclude Include="amf\public\include\components\ZCamLiveStream.h" />
+    <ClInclude Include="amf\public\include\core\AudioBuffer.h" />
+    <ClInclude Include="amf\public\include\core\Buffer.h" />
+    <ClInclude Include="amf\public\include\core\Compute.h" />
+    <ClInclude Include="amf\public\include\core\ComputeFactory.h" />
+    <ClInclude Include="amf\public\include\core\Context.h" />
+    <ClInclude Include="amf\public\include\core\Data.h" />
+    <ClInclude Include="amf\public\include\core\Debug.h" />
+    <ClInclude Include="amf\public\include\core\Dump.h" />
+    <ClInclude Include="amf\public\include\core\Factory.h" />
+    <ClInclude Include="amf\public\include\core\Interface.h" />
+    <ClInclude Include="amf\public\include\core\Plane.h" />
+    <ClInclude Include="amf\public\include\core\Platform.h" />
+    <ClInclude Include="amf\public\include\core\PropertyStorage.h" />
+    <ClInclude Include="amf\public\include\core\PropertyStorageEx.h" />
+    <ClInclude Include="amf\public\include\core\Result.h" />
+    <ClInclude Include="amf\public\include\core\Surface.h" />
+    <ClInclude Include="amf\public\include\core\Trace.h" />
+    <ClInclude Include="amf\public\include\core\Variant.h" />
+    <ClInclude Include="amf\public\include\core\Version.h" />
+    <ClInclude Include="CheckGraphicCard.h" />
+    <ClInclude Include="EncoderComponent\AMFComponents\AMFTextureEncoder.h" />
+    <ClInclude Include="EncoderComponent\AMFComponents\AMFTypeDefines.h" />
+    <ClInclude Include="EncoderComponent\AMFComponents\VideoEncoderVCE.h" />
+    <ClInclude Include="EncoderComponent\D3DHelper.h" />
+    <ClInclude Include="EncoderComponent\NVENCComponents\NvEncoder.h" />
+    <ClInclude Include="EncoderComponent\NVENCComponents\NvEncoderCLIOptions.h" />
+    <ClInclude Include="EncoderComponent\NVENCComponents\NvEncoderD3D11.h" />
+    <ClInclude Include="EncoderComponent\NVENCComponents\VideoEncoderNVENC.h" />
+    <ClInclude Include="EncoderComponent\RgbToNV12.h" />
+    <ClInclude Include="EncoderComponent\VideoEncoder.h" />
+    <ClInclude Include="EncoderComponent\VideoEncoderConfig.h" />
+    <ClInclude Include="EncoderComponent\VideoEncoderFrameConfig.h" />
+    <ClInclude Include="EncoderComponent\AsyncDataProcessor.h" />
+    <ClInclude Include="fec_define.h" />
+    <ClInclude Include="fec_packet.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="GlobalDLLConfig.h" />
+    <ClInclude Include="GlobalDLLContext.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="pxrTool\CachePool.h" />
+    <ClInclude Include="pxrTool\config_reader.h" />
+    <ClInclude Include="pxrTool\DebugHelper.h" />
+    <ClInclude Include="pxrTool\filetool.h" />
+    <ClInclude Include="pxrTool\LogTool.h" />
+    <ClInclude Include="pxrTool\Semaphore.h" />
+    <ClInclude Include="pxrTool\stringtool.h" />
+    <ClInclude Include="pxrTool\TimeTool.h" />
+    <ClInclude Include="RtpPacket.h" />
+    <ClInclude Include="RtpQualityHelper.h" />
+    <ClInclude Include="RVR\RVRPlugin\IEncOutputSink.h" />
+    <ClInclude Include="RVR\RVRPlugin\IVEncPlugin.h" />
+    <ClInclude Include="RVR\RVRPlugin\RVRPluginDefinitions.h" />
+    <ClInclude Include="RVR\RVRUtils\RVRLogger.h" />
+    <ClInclude Include="RVR\RVRUtils\RVRUtils.h" />
+    <ClInclude Include="UpdSocket.h" />
+    <ClInclude Include="VEncPluginPico.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="amf\public\common\AMFFactory.cpp" />
+    <ClCompile Include="amf\public\common\AMFSTL.cpp" />
+    <ClCompile Include="amf\public\common\CurrentTimeImpl.cpp" />
+    <ClCompile Include="amf\public\common\DataStreamFactory.cpp" />
+    <ClCompile Include="amf\public\common\DataStreamFile.cpp" />
+    <ClCompile Include="amf\public\common\DataStreamMemory.cpp" />
+    <ClCompile Include="amf\public\common\IOCapsImpl.cpp" />
+    <ClCompile Include="amf\public\common\PropertyStorageExImpl.cpp" />
+    <ClCompile Include="amf\public\common\Thread.cpp" />
+    <ClCompile Include="amf\public\common\TraceAdapter.cpp" />
+    <ClCompile Include="amf\public\common\Windows\ThreadWindows.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="EncoderComponent\AMFComponents\AMFTextureEncoder.cpp" />
+    <ClCompile Include="EncoderComponent\AMFComponents\VideoEncoderVCE.cpp" />
+    <ClCompile Include="EncoderComponent\D3DHelper.cpp" />
+    <ClCompile Include="EncoderComponent\NVENCComponents\NvEncoder.cpp" />
+    <ClCompile Include="EncoderComponent\NVENCComponents\NvEncoderD3D11.cpp" />
+    <ClCompile Include="EncoderComponent\NVENCComponents\VideoEncoderNVENC.cpp" />
+    <ClCompile Include="EncoderComponent\RgbToNV12.cpp" />
+    <ClCompile Include="EncoderComponent\VideoEncoder.cpp" />
+    <ClCompile Include="EncoderComponent\VideoEncoderConfig.cpp" />
+    <ClCompile Include="EncoderComponent\VideoEncoderFrameConfig.cpp" />
+    <ClCompile Include="EncoderComponent\AsyncDataProcessor.cpp" />
+    <ClCompile Include="fec_packet.cpp" />
+    <ClCompile Include="GlobalDLLConfig.cpp" />
+    <ClCompile Include="GlobalDLLContext.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="pxrTool\CachePool.cpp" />
+    <ClCompile Include="pxrTool\config_reader.cpp" />
+    <ClCompile Include="pxrTool\filetool.cpp" />
+    <ClCompile Include="pxrTool\LogTool.cpp" />
+    <ClCompile Include="pxrTool\Semaphore.cpp" />
+    <ClCompile Include="pxrTool\stringtool.cpp" />
+    <ClCompile Include="pxrTool\TimeTool.cpp" />
+    <ClCompile Include="RtpPacket.cpp" />
+    <ClCompile Include="RtpQualityHelper.cpp" />
+    <ClCompile Include="UpdSocket.cpp" />
+    <ClCompile Include="VEncPluginPico.cpp" />
+    <ClCompile Include="IVEncPlugin.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

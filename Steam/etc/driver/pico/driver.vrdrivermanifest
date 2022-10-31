@@ -1,0 +1,10 @@
+{
+	"alwaysActivate": false,
+	"name" : "pico",
+	"resourceOnly" : false,
+	"redirectsDisplay": true,
+	"hmd_presence" :
+	[
+		"*.*"
+	]
+}
