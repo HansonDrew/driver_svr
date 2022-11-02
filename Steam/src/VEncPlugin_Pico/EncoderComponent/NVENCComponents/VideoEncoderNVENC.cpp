@@ -368,7 +368,7 @@ void VideoEncoderNVENC::Initialize(const VideoEncoderConfig& config)
 			GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
 		}
 	 
-		mEncoder->CreateDefaultEncoderParams(&mInitializeParams, mEncodeCLIOptions->GetEncodeGUID(), mEncodeCLIOptions->GetPresetGUID());
+		mEncoder->CreateDefaultEncoderParams(&mInitializeParams, mEncodeCLIOptions->GetEncodeGUID(), mEncodeCLIOptions->GetPresetGUID(), mEncodeCLIOptions->GetTuningInfo());
 		//mInitializeParams.encodeConfig->frameIntervalP = 0;
 		mInitializeParams.frameRateNum = (uint32_t)mConfig.fps ;
 		mInitializeParams.frameRateDen = 1;

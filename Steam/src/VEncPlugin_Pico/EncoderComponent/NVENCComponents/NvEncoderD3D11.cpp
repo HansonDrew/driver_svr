@@ -1,5 +1,5 @@
 /*
-* Copyright 2017-2019 NVIDIA Corporation.  All rights reserved.
+* Copyright 2017-2021 NVIDIA Corporation.  All rights reserved.
 *
 * Please refer to the NVIDIA end user license agreement (EULA) associated
 * with this source code for terms and conditions that govern your use of
@@ -77,7 +77,6 @@ void NvEncoderD3D11::AllocateInputBuffers(int32_t numInputBuffers)
     for (int count = 0; count < numCount; count++)
     {
         std::vector<void*> inputFrames;
-		std::vector<HANDLE> inputHandles;
         for (int i = 0; i < numInputBuffers; i++)
         {
             ID3D11Texture2D *pInputTextures = NULL;
@@ -104,12 +103,10 @@ void NvEncoderD3D11::AllocateInputBuffers(int32_t numInputBuffers)
             if (m_pD3D11Device->CreateTexture2D(&desc, NULL, &pInputTextures) != S_OK)
             {
                 NVENC_THROW_ERROR("Failed to create d3d11textures", NV_ENC_ERR_OUT_OF_MEMORY);
-                //OutputDebugString(L"pico Failed to create d3d11textures");
             }
-
             inputFrames.push_back(pInputTextures);
         }
-        RegisterInputResources(inputFrames, inputHandles,NV_ENC_INPUT_RESOURCE_TYPE_DIRECTX,
+        RegisterInputResources(inputFrames, NV_ENC_INPUT_RESOURCE_TYPE_DIRECTX, 
             GetMaxEncodeWidth(), GetMaxEncodeHeight(), 0, GetPixelFormat(), count == 1 ? true : false);
     }
 }

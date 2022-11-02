@@ -178,7 +178,8 @@ xcopy /y   $(SolutionDir)..\..\UsbBulk\lib\windows\x64\debug\pxr_base.dll $(Solu
       <AdditionalIncludeDirectories>..\..\..\VolcEngineRTC\include\streaming\;..\..\..\VolcEngineRTC\include\rts\;..\..\..\VolcEngineRTC\include\rtc\;..\..\..\VolcEngineRTC\include\game\;..\..\..\RVRUtils\;..\..\..\RVRPlugin\;..\..\external\glm-0.9.7.0\;..\..\..\RVRPlugin\Unity\;..\..\external\openvr\headers;..\..\..\OpenCV\include;..\..\..\Eigen\;..\..\..\hid\include;..\distribute\;..\..\..\UsbBulk;..\virtual_microphone\;..\..\..\nvapi\include;..\..\..\LiquidVR\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

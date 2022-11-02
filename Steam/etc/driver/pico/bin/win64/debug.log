@@ -1,66 +1,15 @@
 
-542777836900:     9652 [WRN] RVRSettings - D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\.\RVRPlugin.ini
-542784652300:     9652 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process attached====
-542784703400:     9652 [ALW] [PicoVEncPlugin] RegistLogFun
-542784716200:     9652 [ALW] [PicoVEncPlugin] RegistPushEncodedFrameFun
-542871687200:     9652 [ALW]  per_frame_ns_=11111111
-542873993000:     9652 [ALW] ensor tcp bind ok
-542874036300:     9652 [ALW] sensor tcp listen ok
-542874042200:     9652 [ALW] sensor tcp listen init ok
-542874037200:    10460 [ALW] sensor tcp WorkThread ok
-542874348600:     8836 [ALW] SlardarReporterThread    Thread
-542874493000:     1524 [ALW] AddHmdPose    Thread
-542874550400:    13612 [ALW] AddLeftControllerPose      Thread
-542874579100:    17716 [ALW] AddLeftControllerPose      Thread
-543391898700:    15964 [ALW] pico_mic_log{0.0.1.00000000}.{4d8acf5a-e6f1-4538-90b9-18e07204f4bc}
-543391926600:    15964 [ALW] pico_mic_logÂó¿Ë·ç (Pico Streaming Virtual Audio)
-543403340200:    15964 [ALW] pico_mic_logpico pxr_base::MicrophoneDevice::TraceLog 733: find pico device= 0000029A0FBC6140
-543456627900:    15964 [ALW] pico_mic_logStart pico mic_phone successed!
-543458395000:    15964 [ALW] mic device start up ok
-543458588900:    15964 [ALW] init mic socket
-543462862300:    15964 [ALW] [PicoVEncPlugin] VEncPlugin Encode framework: AMF. Instance Point:2860717167840
-543462890300:    15964 [ALW] [PicoVEncPlugin] D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\RVRPlugin.ini
-543467759100:    15964 [ALW] [PicoVEncPlugin] =========NVIDIA  Encoder========
-543467782000:    15964 [ALW] [PicoVEncPlugin] =========NEW NVIDIA  Encoder========
-543467787100:    15964 [ALW] [PicoVEncPlugin] =========  Encoder is  not  nullptr ========
-543468828000:    15964 [ALW] [PicoVEncPlugin] Initializing VideoEncoderNVENC.
-543475338200:    15964 [ALW] [PicoVEncPlugin] hevc encoder exist
-543475409000:    15964 [ALW] [PicoVEncPlugin] gopsize:6
-543475416500:    15964 [ALW] [PicoVEncPlugin] hevc end CreateDefaultEncoderParams.
-543475422200:    15964 [ALW] [PicoVEncPlugin] rateControlMode:1:0:51
-543475426200:    15964 [ALW] [PicoVEncPlugin] enableLTR:0
-543475429800:    15964 [ALW] [PicoVEncPlugin] NV_ENC_BUFFER_FORMAT_ABGR:
-543508570300:    15964 [ALW] [PicoVEncPlugin]  NVVCE CreateEncoder.
-543508589500:    15964 [ALW] [PicoVEncPlugin]  SetEvent(mHEncoderCreateEvent).
-543508594700:    15964 [ALW] [PicoVEncPlugin] encoder build
-543508595100:    10004 [ALW] [PicoVEncPlugin]  WaitForSingleObject(mHEncoderCreateEvent).
-543508606900:    15964 [ALW] [PicoVEncPlugin] =========	RTP	Instance========
-543513986500:    15964 [ALW] [PicoVEncPlugin] gDstIp:
-543514307200:    15964 [ALW] [PicoVEncPlugin] VEncPlugin Encode framework: AMF. Instance Point:2860717171168
-543514348400:    15964 [ALW] [PicoVEncPlugin] D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\RVRPlugin.ini
-543518679900:    15964 [ALW] [PicoVEncPlugin] =========NVIDIA  Encoder========
-543518693000:    15964 [ALW] [PicoVEncPlugin] =========NEW NVIDIA  Encoder========
-543518697500:    15964 [ALW] [PicoVEncPlugin] =========  Encoder is  not  nullptr ========
-543519523400:    15964 [ALW] [PicoVEncPlugin] Initializing VideoEncoderNVENC.
-543520259500:    15964 [ALW] [PicoVEncPlugin] hevc encoder exist
-543520320100:    15964 [ALW] [PicoVEncPlugin] gopsize:6
-543520327400:    15964 [ALW] [PicoVEncPlugin] hevc end CreateDefaultEncoderParams.
-543520331800:    15964 [ALW] [PicoVEncPlugin] rateControlMode:1:0:51
-543520335600:    15964 [ALW] [PicoVEncPlugin] enableLTR:0
-543520339200:    15964 [ALW] [PicoVEncPlugin] NV_ENC_BUFFER_FORMAT_ABGR:
-543529759500:    15964 [ALW] [PicoVEncPlugin]  NVVCE CreateEncoder.
-543529776000:    15964 [ALW] [PicoVEncPlugin]  SetEvent(mHEncoderCreateEvent).
-543529795200:    15964 [ALW] [PicoVEncPlugin] encoder build
-543529798800:    15964 [ALW] [PicoVEncPlugin] =========	RTP	Instance========
-543529836200:     7596 [ALW] [PicoVEncPlugin]  WaitForSingleObject(mHEncoderCreateEvent).
-543531515500:    15964 [ALW] [PicoVEncPlugin] gDstIp:
-548505881900:    10112 [ALW] [PicoVEncPlugin] init connect0faileddst:port29702
-548505908500:    10112 [ALW] [PicoVEncPlugin] tcp left error
-548505914800:    10112 [ALW] [PicoVEncPlugin] tcp set_dst_ip:192.168.123.71port:29702
-548512028600:     4000 [ALW] [PicoVEncPlugin] init connect1faileddst:port29704
-548512049400:     4000 [ALW] [PicoVEncPlugin] tcp right error
-548512057100:     4000 [ALW] [PicoVEncPlugin] tcp set_dst_ip:192.168.123.71port:29704
-555904121800:    15964 [ALW] pico_mic_logMicrophoneDevice  Stop
-555918477700:    15964 [ALW] pico_mic_logpico pxr_base::MicrophoneDevice::TraceLog 123: set default device ok
-555918514400:    15964 [ALW] pico_mic_logset default device ok
-555979395000:    15964 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process detached====
+18659027208900:    27280 [WRN] RVRSettings - D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\.\RVRPlugin.ini
+18659036509100:    27280 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process attached====
+18659036565000:    27280 [ALW] [PicoVEncPlugin] RegistLogFun
+18659036578000:    27280 [ALW] [PicoVEncPlugin] RegistPushEncodedFrameFun
+18659126448400:    27280 [ALW]  per_frame_ns_=11111111
+18659128798900:    21676 [ALW] sensor tcp WorkThread ok
+18659128807900:    27280 [ALW] ensor tcp bind ok
+18659128840200:    27280 [ALW] sensor tcp listen ok
+18659128845200:    27280 [ALW] sensor tcp listen init ok
+18659129017700:    29876 [ALW] SlardarReporterThread    Thread
+18659129067800:    24468 [ALW] AddHmdPose    Thread
+18659129091700:    26264 [ALW] AddLeftControllerPose      Thread
+18659129119800:     2376 [ALW] AddLeftControllerPose      Thread
+18724208080100:    15608 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process detached====
