@@ -610,8 +610,9 @@ unsigned int __stdcall VEncPluginPico::PacketAndSendThread(LPVOID lpParameter)
 		adddata.autoRateFlag = auto_rate;
 		adddata.encodeRate = bit_rate;
 
-		/*string msg = "game rendercost:" + std::to_string((gamerender_cost) / 1000000.f) + "       encode cost:"+std::to_string((encode_cost) / 1000000.f);
-		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);*/
+		/*string msg = "game rendercost:" + std::to_string((gamerender_cost) / 1000000.f) + */
+		string msg = "encode cost:"+std::to_string((encode_cost) / 1000000.f);
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
 
 		uint64_t packetsendbegin = nowInNs();
 		int bufferlen = EncoderObj->mOutFrame[bufferIndex % OUTBUFSIZE].len;

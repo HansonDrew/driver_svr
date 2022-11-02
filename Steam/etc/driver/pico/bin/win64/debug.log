@@ -1,15 +1,15 @@
 
-18659027208900:    27280 [WRN] RVRSettings - D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\.\RVRPlugin.ini
-18659036509100:    27280 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process attached====
-18659036565000:    27280 [ALW] [PicoVEncPlugin] RegistLogFun
-18659036578000:    27280 [ALW] [PicoVEncPlugin] RegistPushEncodedFrameFun
-18659126448400:    27280 [ALW]  per_frame_ns_=11111111
-18659128798900:    21676 [ALW] sensor tcp WorkThread ok
-18659128807900:    27280 [ALW] ensor tcp bind ok
-18659128840200:    27280 [ALW] sensor tcp listen ok
-18659128845200:    27280 [ALW] sensor tcp listen init ok
-18659129017700:    29876 [ALW] SlardarReporterThread    Thread
-18659129067800:    24468 [ALW] AddHmdPose    Thread
-18659129091700:    26264 [ALW] AddLeftControllerPose      Thread
-18659129119800:     2376 [ALW] AddLeftControllerPose      Thread
-18724208080100:    15608 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process detached====
+96122897138800:    26868 [WRN] RVRSettings - D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\.\RVRPlugin.ini
+96122907103300:    26868 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process attached====
+96122907172100:    26868 [ALW] [PicoVEncPlugin] RegistLogFun
+96122907189000:    26868 [ALW] [PicoVEncPlugin] RegistPushEncodedFrameFun
+96123027111000:    26868 [ALW]  per_frame_ns_=11111111
+96123030872500:    36480 [ALW] sensor tcp WorkThread ok
+96123030936700:    26868 [ALW] ensor tcp bind ok
+96123030981800:    26868 [ALW] sensor tcp listen ok
+96123030990200:    26868 [ALW] sensor tcp listen init ok
+96123031233900:     8556 [ALW] SlardarReporterThread    Thread
+96123031278600:    35092 [ALW] AddHmdPose    Thread
+96123031319500:    25316 [ALW] AddLeftControllerPose      Thread
+96123031359800:    26444 [ALW] AddLeftControllerPose      Thread
+96156151625600:     6692 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process detached====
