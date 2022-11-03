@@ -19,6 +19,7 @@
 #include <cstring>
 #include <functional>
 
+#include "../../GlobalDLLContext.h"
 
 #ifndef _WIN32
 inline bool operator==(const GUID &guid1, const GUID &guid2) {
@@ -269,6 +270,9 @@ public:
         funcInit(pParams);
 //        LOG(INFO) << NvEncoderInitParam().MainParamToString(pParams);
        // LOG(TRACE) << NvEncoderInitParam().FullParamToString(pParams);
+
+        GLOBAL_DLL_CONTEXT_LOG()->LogAlways(std::string("MainParamToString:").append(NvEncoderInitParam().MainParamToString(pParams)));
+        GLOBAL_DLL_CONTEXT_LOG()->LogAlways(std::string("FullParamToString:").append(NvEncoderInitParam().FullParamToString(pParams)));
     }
 
 private:
