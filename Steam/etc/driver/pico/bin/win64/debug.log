@@ -1,15 +1,14 @@
 
-96122897138800:    26868 [WRN] RVRSettings - D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\.\RVRPlugin.ini
-96122907103300:    26868 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process attached====
-96122907172100:    26868 [ALW] [PicoVEncPlugin] RegistLogFun
-96122907189000:    26868 [ALW] [PicoVEncPlugin] RegistPushEncodedFrameFun
-96123027111000:    26868 [ALW]  per_frame_ns_=11111111
-96123030872500:    36480 [ALW] sensor tcp WorkThread ok
-96123030936700:    26868 [ALW] ensor tcp bind ok
-96123030981800:    26868 [ALW] sensor tcp listen ok
-96123030990200:    26868 [ALW] sensor tcp listen init ok
-96123031233900:     8556 [ALW] SlardarReporterThread    Thread
-96123031278600:    35092 [ALW] AddHmdPose    Thread
-96123031319500:    25316 [ALW] AddLeftControllerPose      Thread
-96123031359800:    26444 [ALW] AddLeftControllerPose      Thread
-96156151625600:     6692 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process detached====
+4304602423100:    14808 [WRN] RVRSettings - D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\.\RVRPlugin.ini
+4304610368100:    14808 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process attached====
+4304610433000:    14808 [ALW] [PicoVEncPlugin] RegistLogFun
+4304610444700:    14808 [ALW] [PicoVEncPlugin] RegistPushEncodedFrameFun
+4304697207000:    14808 [ALW]  per_frame_ns_=13888888
+4304700310300:    23224 [ALW] sensor tcp WorkThread ok
+4304700318900:    14808 [ALW] ensor tcp bind ok
+4304700385300:    14808 [ALW] sensor tcp listen ok
+4304700391600:    14808 [ALW] sensor tcp listen init ok
+4304700564200:    23684 [ALW] SlardarReporterThread    Thread
+4304700605100:     9792 [ALW] AddLeftControllerPose      Thread
+4304700643700:     2428 [ALW] AddLeftControllerPose      Thread
+4304700677400:    11268 [ALW] AddHmdPose    Thread

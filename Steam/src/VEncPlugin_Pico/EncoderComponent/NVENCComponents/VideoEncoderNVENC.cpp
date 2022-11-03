@@ -433,6 +433,8 @@ void VideoEncoderNVENC::Initialize(const VideoEncoderConfig& config)
 		mInitializeParams.encodeConfig->rcParams.averageBitRate = mConfig.avgBitRate;
 		mInitializeParams.encodeConfig->gopLength =NVENC_INFINITE_GOPLENGTH;
 		mInitializeParams.encodeConfig->rcParams.enableAQ = TRUE;
+		mInitializeParams.encodeConfig->rcParams.enableNonRefP = TRUE;
+		mInitializeParams.encodeConfig->rcParams.multiPass = NV_ENC_MULTI_PASS_DISABLED;
 		mInitializeParams.enableEncodeAsync = TRUE;
 		mInitializeParams.enablePTD = TRUE;
 	

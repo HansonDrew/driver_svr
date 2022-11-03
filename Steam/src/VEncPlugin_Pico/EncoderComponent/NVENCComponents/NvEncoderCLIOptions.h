@@ -19,6 +19,7 @@
 #include <cstring>
 #include <functional>
 //#include "../Utils/Logger.h"
+#include "../../GlobalDLLContext.h"
 
 //extern simplelogger::Logger *logger;
 
@@ -300,6 +301,8 @@ public:
         funcInit(pParams);
         //LOG(INFO) << NvEncoderInitParam().MainParamToString(pParams);
         //LOG(TRACE) << NvEncoderInitParam().FullParamToString(pParams);
+        GLOBAL_DLL_CONTEXT_LOG()->LogAlways(std::string("Main params: ").append(NvEncoderInitParam().MainParamToString(pParams)));
+        GLOBAL_DLL_CONTEXT_LOG()->LogAlways(std::string("Full params: ").append(NvEncoderInitParam().FullParamToString(pParams)));
     }
 
 private:
@@ -383,8 +386,8 @@ private:
     std::function<void(NV_ENC_INITIALIZE_PARAMS *pParams)> funcInit = [](NV_ENC_INITIALIZE_PARAMS *pParams){};
     std::vector<std::string> tokens;
     GUID guidCodec = NV_ENC_CODEC_H264_GUID;
-    GUID guidPreset = NV_ENC_PRESET_P3_GUID;
-    NV_ENC_TUNING_INFO m_TuningInfo = NV_ENC_TUNING_INFO_HIGH_QUALITY;
+    GUID guidPreset = NV_ENC_PRESET_P2_GUID;
+    NV_ENC_TUNING_INFO m_TuningInfo = NV_ENC_TUNING_INFO_ULTRA_LOW_LATENCY;
     bool bLowLatency = false;
     
     const char *szCodecNames = "h264 hevc";
