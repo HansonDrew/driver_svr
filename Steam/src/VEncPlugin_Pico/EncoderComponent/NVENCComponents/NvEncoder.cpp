@@ -663,6 +663,7 @@ int NvEncoder::GetEncodedPacketOnce(uint8_t* buf, int &len, uint64_t& index, boo
 
 bool NvEncoder::Reconfigure(const NV_ENC_RECONFIGURE_PARAMS *pReconfigureParams)
 {
+    GLOBAL_DLL_CONTEXT_LOG()->LogAlways("NvEncoder::Reconfigure");
     NVENC_API_CALL(m_nvenc.nvEncReconfigureEncoder(m_hEncoder, const_cast<NV_ENC_RECONFIGURE_PARAMS*>(pReconfigureParams)));
 
     memcpy(&m_initializeParams, &(pReconfigureParams->reInitEncodeParams), sizeof(m_initializeParams));

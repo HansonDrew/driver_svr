@@ -701,6 +701,7 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, VideoEncoderFrameCon
 		//reConfig.reInitEncodeParams.encodeConfig->gopLength = NVENC_INFINITE_GOPLENGTH;
 		reConfig.reInitEncodeParams.encodeConfig->rcParams.averageBitRate = averBit;
 		reConfig.reInitEncodeParams.encodeConfig->rcParams.maxBitRate = maxBit ;
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways("Start reconfiguration.");
 		mEncoder->Reconfigure(&reConfig);
 		pPicParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR | NV_ENC_PIC_FLAG_OUTPUT_SPSPPS;
 	}
