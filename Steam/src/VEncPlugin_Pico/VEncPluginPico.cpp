@@ -462,6 +462,8 @@ unsigned int __stdcall VEncPluginPico::PacketAndSendThread(LPVOID lpParameter)
 	uint64_t last_buf_index=0;
 	while (EncoderObj->mEncoderRun)
 	{	
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(std::string("last_out_frame is: ").append(std::to_string(last_out_frame)));
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(std::string("out_frame_index_ is: ").append(std::to_string(EncoderObj->out_frame_index_)));
 		if (last_out_frame== EncoderObj->out_frame_index_)
 		{
 			//sleep_micro_seconds(1);

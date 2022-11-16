@@ -544,7 +544,8 @@ NVENCSTATUS NvEncoder::DoEncode(NV_ENC_INPUT_PTR inputBuffer, NV_ENC_OUTPUT_PTR 
     picParams.inputWidth = GetEncodeWidth();
     picParams.inputHeight = GetEncodeHeight();
     picParams.outputBitstream = outputBuffer;
-    picParams.completionEvent = GetCompletionEvent(m_iToSend % m_nEncoderBuffer);
+    picParams.inputTimeStamp = 0;
+    //picParams.completionEvent = GetCompletionEvent(m_iToSend % m_nEncoderBuffer);
     NVENCSTATUS nvStatus = m_nvenc.nvEncEncodePicture(m_hEncoder, &picParams);
 
     return nvStatus; 
@@ -614,6 +615,53 @@ void NvEncoder::GetEncodedPacket(std::vector<NV_ENC_OUTPUT_PTR> &vOutputBuffer, 
     }
 }
 
+int NvEncoder::GetEncodedPacketSyn(uint8_t* buf, int& len, uint64_t& index, bool bOutputDelay, int eyeIndex) {
+    int iEnd = bOutputDelay ? m_iToSend - m_nOutputDelay : m_iToSend;
+    len = 0;
+    if (m_iGot <= iEnd)
+    {
+        NV_ENC_LOCK_BITSTREAM lockBitstreamData = { NV_ENC_LOCK_BITSTREAM_VER };
+        lockBitstreamData.outputBitstream = m_vBitstreamOutputBuffer[m_iGot % m_nEncoderBuffer];
+        lockBitstreamData.doNotWait = false;
+        NVENC_API_CALL(m_nvenc.nvEncLockBitstream(m_hEncoder, &lockBitstreamData));
+
+        uint8_t* pData = (uint8_t*)lockBitstreamData.bitstreamBufferPtr;
+        memmove(buf, pData, lockBitstreamData.bitstreamSizeInBytes);
+        len = (int)lockBitstreamData.bitstreamSizeInBytes;
+        index = lockBitstreamData.outputTimeStamp;
+        NVENC_API_CALL(m_nvenc.nvEncUnlockBitstream(m_hEncoder, lockBitstreamData.outputBitstream));
+        GLOBAL_DLL_CONTEXT_LOG()->LogAlways(std::string("outputDuration: ").append(std::to_string(lockBitstreamData.outputDuration)));
+        if (gConfig.GetRtcOrBulkMode_() != 0)
+        {
+            GLOBAL_DLL_CONTEXT_LOG()->LogAlways("GetRtcOrBulkMode_ true;");
+            EncodeOutWithInfo encode_info;
+            encode_info.autoRateFlag = gConfig.GetAutoRateValue();
+            int bit_rate = 0;
+            int max_rate = 0;
+            RtpQualityHelper::GetInstance()->GetCurrentRate(bit_rate, max_rate);
+            encode_info.bitRate = bit_rate;
+            encode_info.encodEnd = nowInNs();
+            encode_info.index = index;//0829
+            gPushEncodedFrameFun((char*)pData, lockBitstreamData.bitstreamSizeInBytes, eyeIndex, encode_info);
+        }
+
+        if (m_vMappedInputBuffers[m_iGot % m_nEncoderBuffer])
+        {
+            NVENC_API_CALL(m_nvenc.nvEncUnmapInputResource(m_hEncoder, m_vMappedInputBuffers[m_iGot % m_nEncoderBuffer]));
+            m_vMappedInputBuffers[m_iGot % m_nEncoderBuffer] = nullptr;
+        }
+
+        if (m_bMotionEstimationOnly && m_vMappedRefBuffers[m_iGot % m_nEncoderBuffer])
+        {
+            NVENC_API_CALL(m_nvenc.nvEncUnmapInputResource(m_hEncoder, m_vMappedRefBuffers[m_iGot % m_nEncoderBuffer]));
+            m_vMappedRefBuffers[m_iGot % m_nEncoderBuffer] = nullptr;
+        }
+        m_iGot++;
+        GLOBAL_DLL_CONTEXT_LOG()->LogAlways("m_iGot++;");
+    }
+    return len;
+}
+
 int NvEncoder::GetEncodedPacketOnce(uint8_t* buf, int &len, uint64_t& index, bool bOutputDelay, int eyeIndex)
 {
 	//uint64_t starttime = GetTimestampUs();
@@ -634,6 +682,7 @@ int NvEncoder::GetEncodedPacketOnce(uint8_t* buf, int &len, uint64_t& index, boo
 		NVENC_API_CALL(m_nvenc.nvEncUnlockBitstream(m_hEncoder, lockBitstreamData.outputBitstream));
         if (gConfig.GetRtcOrBulkMode_()!=0)
         {
+            GLOBAL_DLL_CONTEXT_LOG()->LogAlways("GetRtcOrBulkMode_ true;");
 			EncodeOutWithInfo encode_info;
 			encode_info.autoRateFlag = gConfig.GetAutoRateValue();
 			int bit_rate = 0;

@@ -25,6 +25,7 @@ public:
 
 	void Shutdown();
 	static unsigned int __stdcall GetEncodeFrameThread(LPVOID lpParameter);
+	void GetEncodedData();
 	 
 	//static unsigned int __stdcall PacketAndSendThread(LPVOID lpParameter);
 	unsigned  mEncodeThreadId;

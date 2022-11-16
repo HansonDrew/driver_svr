@@ -46,6 +46,159 @@ VideoEncoderNVENC::~VideoEncoderNVENC()
 }
 int outtime = 0;
 
+void VideoEncoderNVENC::GetEncodedData() {
+	GLOBAL_DLL_CONTEXT_LOG()->LogAlways("GetEncodedData");
+	int index = 0;
+	int len = 0;
+	uint64_t buf_index = 0;
+	int ret = mEncoder->GetEncodedPacketSyn(
+		mOutFrame[out_frame_index_ % OUTBUFSIZE].buf, len, buf_index, false, mIndex);
+	mOutFrame[out_frame_index_ % OUTBUFSIZE].len = len;
+	mOutFrame[out_frame_index_ % OUTBUFSIZE].index = buf_index;
+	if (ret <= 0)
+	{
+		string msg = "GetEncodedPacketOnce failed  %d" + to_string(ret);
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+		out_frame_index_++;
+	}
+	else
+	{
+		index = mOutFrame[out_frame_index_ % OUTBUFSIZE].index;
+		gRenderPoseList[index % POSELISTSIZE].endEncodeStamp = nowInNs();
+		if (gLog)
+		{
+			uint64_t GetFrameEnd = nowInNs();
+
+			if (mIndex == 0)
+			{
+				string msg = "left Encode cost time:" + to_string((GetFrameEnd - gRenderPoseList[index % POSELISTSIZE].poseRecvTime) / 1000000.f);
+				GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+			}
+			else
+			{
+				string msg = "right Encode cost time:" + to_string((GetFrameEnd - gRenderPoseList[index % POSELISTSIZE].poseRecvTime) / 1000000.f);
+				GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+			}
+
+		}
+		if (gConfig.GetOutFile() == 1 || gSaveVideo)
+		{
+			if (gConfig.GetIfHEVC() == 1)
+			{
+				char itype = ((mOutFrame[out_frame_index_ % OUTBUFSIZE].buf[4]) & 0x7E) >> 1;
+				if (itype == 32)
+				{
+					spspps_start_ = true;
+				}
+				if (mIndex == 0)
+				{
+					if (pleft == NULL)
+					{
+
+						pleft = fopen("left.h265", "wb+");
+					}
+					if (spspps_start_)
+					{
+						fwrite(mOutFrame[out_frame_index_ % OUTBUFSIZE].buf, sizeof(char), mOutFrame[out_frame_index_ % OUTBUFSIZE].len, pleft);
+					}
+
+				}
+				else
+				{
+					if (pright == NULL)
+					{
+						pright = fopen("right.h265", "wb+");
+					}
+					if (spspps_start_)
+					{
+						fwrite(mOutFrame[out_frame_index_ % OUTBUFSIZE].buf, sizeof(char), mOutFrame[out_frame_index_ % OUTBUFSIZE].len, pright);
+					}
+
+				}
+			}
+			else
+			{
+				char itype = ((mOutFrame[out_frame_index_ % OUTBUFSIZE].buf[4]) & 0x1f);
+				if (itype == 7)
+				{
+					spspps_start_ = true;
+				}
+				if (mIndex == 0)
+				{
+					if (pleft == NULL)
+					{
+
+						pleft = fopen("left.h264", "wb+");
+					}
+					if (spspps_start_)
+					{
+						fwrite(mOutFrame[out_frame_index_ % OUTBUFSIZE].buf, sizeof(char), mOutFrame[out_frame_index_ % OUTBUFSIZE].len, pleft);
+					}
+
+				}
+				else
+				{
+					if (pright == NULL)
+					{
+						pright = fopen("right.h264", "wb+");
+					}
+					if (spspps_start_)
+					{
+						fwrite(mOutFrame[out_frame_index_ % OUTBUFSIZE].buf, sizeof(char), mOutFrame[out_frame_index_ % OUTBUFSIZE].len, pright);
+					}
+
+				}
+			}
+		}
+
+		if (gConfig.GetIfHEVC() == 0)
+		{
+			int ret = mOutFrame[out_frame_index_ % OUTBUFSIZE].buf[4] & 0x1f;
+			if (ret == 7)
+			{
+				mNoIDRTime = 0;
+			}
+			else
+			{
+				mNoIDRTime++;
+			}
+		}
+		else
+		{
+
+			int ret = (mOutFrame[out_frame_index_ % OUTBUFSIZE].buf[4] & 0x7E) >> 1;
+			if (ret == 32)
+			{
+				mNoIDRTime = 0;
+			}
+			else
+			{
+				mNoIDRTime++;
+			}
+		}
+
+		out_frame_index_++;
+	}
+
+	/*try
+	{
+		std::string msg = "delete encoder ";
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+		mEncoder->DestroyEncoder();
+		msg = "delete encoder ok";
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+	}
+	catch (const std::exception&)
+	{
+		std::string msg = "delete encoder error";
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+	}
+	DeleteOutFrameBuffer();
+	if (mEncoder)
+	{
+		delete mEncoder;
+	}*/
+}
 
 unsigned int __stdcall VideoEncoderNVENC::GetEncodeFrameThread(LPVOID lpParameter)
 {
@@ -426,7 +579,7 @@ void VideoEncoderNVENC::Initialize(const VideoEncoderConfig& config)
 
 		/*mInitializeParams.encodeConfig->rcParams.constQP.qpIntra = 0;
 		mInitializeParams.encodeConfig->rcParams.constQP.qpInterP = 12;*/
-		 
+		
 		msg = "rateControlMode:" + std::to_string(gConfig.GetRateControllModel())+":"+std::to_string(mConfig.minIQP)+":" + std::to_string(mConfig.maxPQP);
 		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
 		mInitializeParams.encodeConfig->rcParams.maxBitRate = mConfig.maxBitRate;
@@ -435,9 +588,9 @@ void VideoEncoderNVENC::Initialize(const VideoEncoderConfig& config)
 		mInitializeParams.encodeConfig->rcParams.enableAQ = TRUE;
 		mInitializeParams.encodeConfig->rcParams.enableNonRefP = TRUE;
 		mInitializeParams.encodeConfig->rcParams.multiPass = NV_ENC_MULTI_PASS_DISABLED;
-		mInitializeParams.enableEncodeAsync = TRUE;
+		mInitializeParams.enableEncodeAsync = FALSE;
 		mInitializeParams.enablePTD = TRUE;
-	
+
 		msg = "frameIntervalP:" + std::to_string(mInitializeParams.encodeConfig->frameIntervalP);
 		msg = "enableLTR:" + std::to_string(mInitializeParams.encodeConfig->encodeCodecConfig.hevcConfig.enableLTR);
 		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
@@ -474,13 +627,13 @@ void VideoEncoderNVENC::Initialize(const VideoEncoderConfig& config)
 			GLOBAL_DLL_CONTEXT_LOG()->LogAlways(e->getErrorString());
 		}
 		
-		HANDLE ret = (HANDLE)_beginthreadex(NULL, 0, &GetEncodeFrameThread, this, 0, NULL);
-		SetThreadPriority(ret, THREAD_PRIORITY_TIME_CRITICAL);
-		WaitForSingleObject(mHThreadEvent, INFINITE);
-		CloseHandle(ret);
-		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(" NVVCE CreateEncoder.");
+		/*HANDLE ret = (HANDLE)_beginthreadex(NULL, 0, &GetEncodeFrameThread, this, 0, NULL);
+		SetThreadPriority(ret, THREAD_PRIORITY_TIME_CRITICAL);*/
+		//WaitForSingleObject(mHThreadEvent, INFINITE);
+		//CloseHandle(ret);
+		/*GLOBAL_DLL_CONTEXT_LOG()->LogAlways(" NVVCE CreateEncoder.");
 		SetEvent(mHEncoderCreateEvent);
-		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(" SetEvent(mHEncoderCreateEvent).");
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(" SetEvent(mHEncoderCreateEvent).");*/
 		init_success_ = true;
 	}
 	catch (NVENCException* e)
@@ -724,6 +877,8 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, VideoEncoderFrameCon
 		pPicParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR | NV_ENC_PIC_FLAG_OUTPUT_SPSPPS;
 	}*/
 	int poseIndex = gRenderPoseIndex - 1;
+
+	uint64_t beforeEncode = nowInNs();
 	int ret = mEncoder->EncodeFrame(&pPicParams);
 	mRenderCost[poseIndex % POSELISTSIZE] = frameConfig->timestamp;
 	if (gLog)
@@ -741,6 +896,10 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, VideoEncoderFrameCon
 		msg = msg +" EncodeFrame trace time:"+to_string((EncodeFrameEnd- gRenderPoseList[poseIndex % POSELISTSIZE].poseRecvTime)/1000000.f);
 		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
 	}
+
+	GetEncodedData();
+	uint64_t afterEncode = nowInNs();
+	GLOBAL_DLL_CONTEXT_LOG()->LogAlways(std::string("Encode time is:").append(std::to_string(afterEncode - beforeEncode)));
 }
 
 void VideoEncoderNVENC::Flush() 

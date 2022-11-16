@@ -252,6 +252,7 @@ public:
     static uint32_t GetWidthInBytes(const NV_ENC_BUFFER_FORMAT bufferFormat, const uint32_t width);
 
     int GetEncodedPacketOnce(uint8_t* buf, int& len, uint64_t& index, bool bOutputDelay, int eyeIndex);
+    int GetEncodedPacketSyn(uint8_t* buf, int& len, uint64_t& index, bool bOutputDelay, int eyeIndex);
 
     /**
     *  @brief This function returns the number of allocated buffers.
