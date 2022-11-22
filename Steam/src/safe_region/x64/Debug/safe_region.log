@@ -1,9 +1,0 @@
-﻿  safe_region.cpp
-D:\working\driverforcv3\sparrow_driver\RVRSDK_2.3.8_Source\RVRRenderer\Steam\src\safe_region\safe_region.cpp(116,28): warning C4244: “=”: 从“_Ty”转换到“float”，可能丢失数据
-          with
-          [
-              _Ty=double
-          ]
-D:\working\driverforcv3\sparrow_driver\RVRSDK_2.3.8_Source\RVRRenderer\Steam\src\safe_region\safe_region.cpp(234,8): warning C4101: “buf”: 未引用的局部变量
-D:\working\driverforcv3\sparrow_driver\RVRSDK_2.3.8_Source\RVRRenderer\Steam\src\safe_region\safe_region.cpp(457,119): warning C4267: “参数”: 从“size_t”转换到“uint32_t”，可能丢失数据
-  safe_region.vcxproj -> D:\working\driverforcv3\sparrow_driver\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\safe_region.exe
