@@ -1,15 +1,77 @@
 
-3276121479700:    17816 [WRN] RVRSettings - D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\.\RVRPlugin.ini
-3276129055500:    17816 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process attached====
-3276129103200:    17816 [ALW] [PicoVEncPlugin] RegistLogFun
-3276129114900:    17816 [ALW] [PicoVEncPlugin] RegistPushEncodedFrameFun
-3276231515900:    17816 [ALW]  per_frame_ns_=13888888
-3276233698500:    17816 [ALW] ensor tcp bind ok
-3276233719900:    17816 [ALW] sensor tcp listen ok
-3276233724100:    17816 [ALW] sensor tcp listen init ok
-3276234403400:    15704 [ALW] sensor tcp WorkThread ok
-3276234538200:    17300 [ALW] SlardarReporterThread    Thread
-3276234562100:     5040 [ALW] AddHmdPose    Thread
-3276234584100:    17732 [ALW] AddLeftControllerPose      Thread
-3276234629900:     5732 [ALW] AddLeftControllerPose      Thread
-3303328995500:    11976 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process detached====
+67777911131300:    11268 [WRN] RVRSettings - D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\.\RVRPlugin.ini
+67777918901000:    11268 [ALW] [PicoVEncPlugin] ====PicoVR VEncPlugin implementation process attached====
+67777918958100:    11268 [ALW] [PicoVEncPlugin] RegistLogFun
+67777918969400:    11268 [ALW] [PicoVEncPlugin] RegistPushEncodedFrameFun
+67778009524400:    11268 [ALW]  per_frame_ns_=11111111
+67778011958300:    21268 [ALW] sensor tcp WorkThread ok
+67778011976300:    11268 [ALW] ensor tcp bind ok
+67778011998600:    11268 [ALW] sensor tcp listen ok
+67778012002700:    11268 [ALW] sensor tcp listen init ok
+67778012170100:    17948 [ALW] AddHmdPose    Thread
+67778012220200:    14316 [ALW] SlardarReporterThread    Thread
+67778012248800:     9696 [ALW] AddLeftControllerPose      Thread
+67778012290300:    23340 [ALW] AddLeftControllerPose      Thread
+67780902049800:    23948 [ALW] pico_mic_log{0.0.1.00000000}.{4d8acf5a-e6f1-4538-90b9-18e07204f4bc}
+67780902090800:    23948 [ALW] pico_mic_logÂó¿Ë·ç (Pico Streaming Virtual Audio)
+67780915577700:    23948 [ALW] pico_mic_logpico pxr_base::MicrophoneDevice::TraceLog 733: find pico device= 000001EC722E9DF0
+67780955339500:    23948 [ALW] pico_mic_logStart pico mic_phone successed!
+67780956960200:    23948 [ALW] mic device start up ok
+67780957112700:    23948 [ALW] init mic socket
+67780960408100:    23948 [ALW] [PicoVEncPlugin] VEncPlugin Encode framework: AMF. Instance Point:2114958988448
+67780960434500:    23948 [ALW] [PicoVEncPlugin] D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\RVRPlugin.ini
+67780962600600:    23948 [ALW] [PicoVEncPlugin] =========NVIDIA  Encoder========
+67780962620400:    23948 [ALW] [PicoVEncPlugin] =========NEW NVIDIA  Encoder========
+67780962624900:    23948 [ALW] [PicoVEncPlugin] =========  Encoder is  not  nullptr ========
+67780963687600:    23948 [ALW] [PicoVEncPlugin] Initializing VideoEncoderNVENC.
+67780965940000:    23948 [ALW] [PicoVEncPlugin] hevc encoder exist
+67780966007200:    23948 [ALW] [PicoVEncPlugin] gopsize:6
+67780966016300:    23948 [ALW] [PicoVEncPlugin] hevc end CreateDefaultEncoderParams.
+67780966020600:    23948 [ALW] [PicoVEncPlugin] nvidia get ratecontrol tyep=2
+67780966024400:    23948 [ALW] [PicoVEncPlugin] rateControlMode:2:0:51
+67780966027900:    23948 [ALW] [PicoVEncPlugin] enableLTR:0
+67780966031200:    23948 [ALW] [PicoVEncPlugin] NV_ENC_BUFFER_FORMAT_ABGR:
+67781000884800:    23948 [ALW] [PicoVEncPlugin]  NVVCE CreateEncoder.
+67781000913400:    23948 [ALW] [PicoVEncPlugin]  SetEvent(mHEncoderCreateEvent).
+67781000918000:    23948 [ALW] [PicoVEncPlugin] encoder build
+67781000921500:    23948 [ALW] [PicoVEncPlugin] =========	RTP	Instance========
+67781001043900:     8952 [ALW] [PicoVEncPlugin]  WaitForSingleObject(mHEncoderCreateEvent).
+67781006006700:    23948 [ALW] [PicoVEncPlugin] gDstIp:
+67781006372000:    23948 [ALW] [PicoVEncPlugin] VEncPlugin Encode framework: AMF. Instance Point:2115040808112
+67781006422900:    23948 [ALW] [PicoVEncPlugin] D:\ByteDance\RVRSDK_2.3.8_Source\RVRSDK_2.3.8_Source\RVRRenderer\Steam\etc\driver\pico\bin\win64\RVRPlugin.ini
+67781008663200:    23948 [ALW] [PicoVEncPlugin] =========NVIDIA  Encoder========
+67781008677200:    23948 [ALW] [PicoVEncPlugin] =========NEW NVIDIA  Encoder========
+67781008681500:    23948 [ALW] [PicoVEncPlugin] =========  Encoder is  not  nullptr ========
+67781008685900:    23948 [ALW] [PicoVEncPlugin] RateDetecter SetConfigRate:65000000:78000000:65000000:78000000
+67781009688800:    23948 [ALW] [PicoVEncPlugin] Initializing VideoEncoderNVENC.
+67781010147800:    23948 [ALW] [PicoVEncPlugin] hevc encoder exist
+67781010248700:    23948 [ALW] [PicoVEncPlugin] gopsize:6
+67781010255700:    23948 [ALW] [PicoVEncPlugin] hevc end CreateDefaultEncoderParams.
+67781010259600:    23948 [ALW] [PicoVEncPlugin] nvidia get ratecontrol tyep=2
+67781010263200:    23948 [ALW] [PicoVEncPlugin] rateControlMode:2:0:51
+67781010266700:    23948 [ALW] [PicoVEncPlugin] enableLTR:0
+67781010304300:    23948 [ALW] [PicoVEncPlugin] NV_ENC_BUFFER_FORMAT_ABGR:
+67781017388700:    23948 [ALW] [PicoVEncPlugin]  NVVCE CreateEncoder.
+67781017406500:    23948 [ALW] [PicoVEncPlugin]  SetEvent(mHEncoderCreateEvent).
+67781017410900:    23948 [ALW] [PicoVEncPlugin] encoder build
+67781017414300:    23948 [ALW] [PicoVEncPlugin] =========	RTP	Instance========
+67781017522700:    16140 [ALW] [PicoVEncPlugin]  WaitForSingleObject(mHEncoderCreateEvent).
+67781019025700:    23948 [ALW] [PicoVEncPlugin] gDstIp:
+67783547234300:    14244 [ALW] idr_immediately
+67783547773700:    14244 [ALW] [PicoVEncPlugin] insert idr
+67784425182300:    18032 [ALW] [PicoVEncPlugin] init connect1faileddst:port29704
+67784425217900:    18032 [ALW] [PicoVEncPlugin] tcp right error
+67784425231000:    18032 [ALW] [PicoVEncPlugin] tcp set_dst_ip:127.0.0.1port:29704
+67784425182300:    17916 [ALW] [PicoVEncPlugin] init connect0faileddst:port29702
+67784425265300:    17916 [ALW] [PicoVEncPlugin] tcp left error
+67784425276200:    17916 [ALW] [PicoVEncPlugin] tcp set_dst_ip:127.0.0.1port:29702
+67784813083000:    14244 [ALW] idr_immediately
+67784813524600:    14244 [ALW] [PicoVEncPlugin] insert idr
+67786075770600:    14244 [ALW] idr_immediately
+67786076487800:    14244 [ALW] [PicoVEncPlugin] insert idr
+68049018229900:    14244 [ALW] idr_immediately
+68049018758100:    14244 [ALW] [PicoVEncPlugin] insert idr
+68050280413100:    14244 [ALW] idr_immediately
+68050280982700:    14244 [ALW] [PicoVEncPlugin] insert idr
+68051549210000:    14244 [ALW] idr_immediately
+68051549554800:    14244 [ALW] [PicoVEncPlugin] insert idr
