@@ -11,6 +11,8 @@
 #include "driverlog.h"
 #include "config_reader.h"
 #include "RVRLogger.h"
+#include "Util.h"
+#include "stringtool.h"
 extern ConfigReader gConfigReader;
  
 using namespace RVR;
@@ -197,7 +199,7 @@ void Compositor::Merge()
 	}
 	if (gPrintMsg)
 	{
-		Blit2::WirteText(L"pico test");
+		Blit2::WirteText(L"pico test",color_flag::white);
 	}
 	
     Clear();
@@ -207,27 +209,34 @@ void Compositor::SetQ1Q2(float q1[4], float q2[4])
 {
 	Blit2::SetQ1Q2(q1,q2);
 }
+
+int frame_index = 0;
+uint64_t last_pose_ts = 0;
+int last_hmd_index = 0;
+float last_r_change_x = 0;
+float last_r_change = 0;
+float last_h_change = 0;
 //-----------------------------------------------------------------------------
-void Compositor::Merge2to1(int index)
+void Compositor::Merge2to1(int index, RVR::RVRPoseHmdData hmd, RVR::RVRControllerData left, RVR::RVRControllerData right, uint64_t pose_index, int hmd_index)
 //-----------------------------------------------------------------------------
 {
 	float backgroundColor[4] = { 0.01f, 0.01f, 0.01f, 1.0f };
-	if (index==0)
+	if (index == 0)
 	{
 		D3DHelper::Clear(context, resultRenderTarget2to1[0], backgroundColor);
 	}
-	else if (index == 1) 
+	else if (index == 1)
 	{
 		D3DHelper::Clear(context, resultRenderTarget2to1[1], backgroundColor);
 	}
-	
-	
+
+
 
 	size_t count = layers->size();
 
 	for (int i = 0; i < count; i++)
 	{
-		if (layers->at(i).left.texture != nullptr&& layers->at(i).right.texture !=nullptr)
+		if (layers->at(i).left.texture != nullptr && layers->at(i).right.texture != nullptr)
 		{
 
 			if (gConfigReader.GetAADTFlag() == 0)
@@ -247,7 +256,7 @@ void Compositor::Merge2to1(int index)
 			}
 
 		}
-		else 
+		else
 		{
 			if (gLog)
 			{
@@ -275,20 +284,75 @@ void Compositor::Merge2to1(int index)
 		{
 			ID3D11ShaderResourceView* src[2];
 			src[0] = AsShaderResource(device, layers->at(i).left.texture);
-			src[1] = AsShaderResource(device, layers->at(i).left.texture);		
+			src[1] = AsShaderResource(device, layers->at(i).left.texture);
 			Blit2::Blit2to1(resultRenderTarget2to1[index], &resultViewport, src, layers->at(i).left.bounds, layers->at(i).left.bounds, !(i == 0));
 		}*/
 
 	}
 	if (gPrintMsg)
 	{
-		if (index % 2 == 0)
-		{
-			Blit2::WirteText(L"pico test");
-		}
+		wchar_t buf_out[1024];
+		int ts_sub = (pose_index - last_pose_ts) / 100000;
+		std::wstring msgs;
+		float l_sub_x, r_sub_x, l_sub_y, l_sub_z, r_sub_y, r_sub_z, l_pose_change, r_pose_change,
+			h_sub_x, h_sub_y, h_sub_z;
+		l_sub_x = left.position.x - last_left.position.x;
+		r_sub_x = right.position.x - last_right.position.x;
+		r_sub_y = right.position.y - last_right.position.y;
+		r_sub_z = right.position.z - last_right.position.z;
+		l_pose_change = sqrt(pow(l_sub_x, 2) + pow(left.position.x - last_left.position.x, 2) + pow(left.position.z - last_left.position.z, 2));
+		r_pose_change = sqrt(pow(r_sub_x, 2) + pow(right.position.x - last_right.position.x, 2) + pow(right.position.z - last_right.position.z, 2));
+		double h_pitch, h_yaw, h_roll;
+		float h_pose_change = sqrt(pow(hmd.position.x - last_hmd.position.x, 2) + pow(hmd.position.y - last_hmd.position.y, 2) + pow(hmd.position.z - last_hmd.position.z, 2));
+		//GetSubAngles(hmd.rotation,last_hmd.rotation,h_pitch,h_yaw,h_roll);
 
+		msgs = L"index=" + std::to_wstring(frame_index) +
+			L",h" + std::to_wstring(pose_index) + L",ts" + std::to_wstring(ts_sub) + L",hi" + std::to_wstring(hmd_index) +
+			L"\nh:" + std::to_wstring(hmd.position.x) + L"," + std::to_wstring(hmd.position.y) + L"," + std::to_wstring(hmd.position.y) + L","
+			+ std::to_wstring(hmd.rotation.w) + L"," + std::to_wstring(hmd.rotation.x) + L"," + std::to_wstring(hmd.rotation.y) + L"," + std::to_wstring(hmd.rotation.z) + L","
+			/*	L"\nL:" + std::to_wstring(left.position.x) + L"," + std::to_wstring(left.position.y) + L"," + std::to_wstring(left.position.z) + L","
+				+ std::to_wstring(left.rotation.w) + L"," + std::to_wstring(left.rotation.x) + L"," + std::to_wstring(left.rotation.y) + L"," + std::to_wstring(left.rotation.z) + L","*/
+			L"\nR:" + std::to_wstring(right.position.x) + L"," + std::to_wstring(right.position.y) + L"," + std::to_wstring(right.position.z) + L","
+			+ std::to_wstring(right.rotation.w) + L"," + std::to_wstring(right.rotation.x) + L"," + std::to_wstring(right.rotation.y) + L"," + std::to_wstring(right.rotation.z) + L"," +
+			L"\nr_change:" + std::to_wstring(r_sub_x) + L"," + std::to_wstring(r_sub_y) + L"," + std::to_wstring(r_sub_z) + L"," + std::to_wstring(r_pose_change) +
+			L"\nh_change:" + std::to_wstring(hmd.position.x - last_hmd.position.x) + L"," + std::to_wstring(hmd.position.y - last_hmd.position.y) + L"," + std::to_wstring(hmd.position.z - last_hmd.position.z) +
+			std::to_wstring(h_pose_change);// +
+
+		int color = 0;
+		if ((r_pose_change == 0))
+		{
+			color = 1;
+		}
+		Blit2::WirteText((wchar_t*)msgs.c_str(), color_flag(color));
+
+		std::string log_msg;
+		log_msg = "sensorindex:" + std::to_string(frame_index) +
+			",h:" + std::to_string(pose_index) + ",ts:" + std::to_string(ts_sub) + ",hi:" + std::to_string(hmd_index) +
+			",h:" + std::to_string(hmd.position.x) + "," + std::to_string(hmd.position.y) + "," + std::to_string(hmd.position.y) + ","
+			+ std::to_string(hmd.rotation.w) + "," + std::to_string(hmd.rotation.x) + "," + std::to_string(hmd.rotation.y) + "," + std::to_string(hmd.rotation.z) + ","
+			/*	L"\nL:" + std::to_wstring(left.position.x) + L"," + std::to_wstring(left.position.y) + L"," + std::to_wstring(left.position.z) + L","
+				+ std::to_wstring(left.rotation.w) + L"," + std::to_wstring(left.rotation.x) + L"," + std::to_wstring(left.rotation.y) + L"," + std::to_wstring(left.rotation.z) + L","*/
+			"R:" + std::to_string(right.position.x) + "," + std::to_string(right.position.y) + "," + std::to_string(right.position.z) + ","
+			+ std::to_string(right.rotation.w) + "," + std::to_string(right.rotation.x) + "," + std::to_string(right.rotation.y) + "," + std::to_string(right.rotation.z) + "," +
+			"\R_change:" + std::to_string(r_sub_x) + "," + std::to_string(r_sub_y) + "," + std::to_string(r_sub_z) + "," + std::to_string(r_pose_change) +
+			",\h_change:" + std::to_string(hmd.position.x - last_hmd.position.x) + "," + std::to_string(hmd.position.y - last_hmd.position.y) + "," + std::to_string(hmd.position.z - last_hmd.position.z) +
+			std::to_string(h_pose_change) + ",rchange_sub:" + std::to_string(r_pose_change - last_r_change) + ",r_x_sub:" + std::to_string(r_sub_x - last_r_change_x) + ",h_change_sub:" + std::to_string(h_pose_change - h_pose_change);// +
+		RVR::RVR_LOG_A(log_msg.c_str());
+		last_hmd = hmd;
+		last_left = left;
+		last_right = right;
+		last_r_change = r_pose_change;
+		last_r_change_x = r_sub_x;
+		last_h_change = h_pose_change;
 	}
-	
+	if ((hmd_index - last_hmd_index) != 1)
+	{
+		DriverLog("hmd sensor lost %d  %d", last_hmd_index, hmd_index);
+	}
+
+	frame_index++;
+	last_pose_ts = pose_index;
+	last_hmd_index = hmd_index;
 	Clear();
 }
 

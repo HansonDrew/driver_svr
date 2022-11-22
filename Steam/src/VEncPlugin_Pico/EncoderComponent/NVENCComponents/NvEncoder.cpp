@@ -19,7 +19,7 @@
 #include"../pxrTool/TimeTool.h"
 #include "../pxrTool/config_reader.h"
 #include "../RVRPlugin/IVEncPlugin.h"
-
+#include "../RateDetecter.h"
 #ifndef _WIN32
 #include <cstring>
 static inline bool operator==(const GUID &guid1, const GUID &guid2) {
@@ -33,6 +33,7 @@ static inline bool operator!=(const GUID &guid1, const GUID &guid2) {
 
 extern PushEncodedFrameFun gPushEncodedFrameFun;
 extern ConfigReader gConfig;
+extern int gRtpPloadTpye;
 void NvEncoder::EncodeJudge(bool& hevc, bool& h264)
 {
 	uint32_t EncCount = 0;
@@ -758,10 +759,26 @@ int NvEncoder::GetEncodedPacketOnce(uint8_t* buf, int &len, uint64_t& index, boo
 			encode_info.autoRateFlag = gConfig.GetAutoRateValue();
 			int bit_rate = 0;
 			int max_rate = 0;
-			RtpQualityHelper::GetInstance()->GetCurrentRate(bit_rate, max_rate);
+            int auto_rate = gConfig.GetAutoRateValue();
+            if (auto_rate == 1)
+            {
+                bit_rate = RateDetecter::GetInstance()->GetCurrentAverageRate();
+            }
+            else
+            {
+                bit_rate = gConfig.GetAverageBitRateValue();
+            }
 			encode_info.bitRate = bit_rate;
 			encode_info.encodEnd = nowInNs() ;
-            encode_info.index = index;//0829
+            if (gConfig.BigPicture()==1)
+            {
+                encode_info.index = index;
+            } 
+            else
+            {
+                encode_info.index = out_inedx_;
+            }
+            encode_info.PloadTpye = gRtpPloadTpye;
             gPushEncodedFrameFun((char*)pData, lockBitstreamData.bitstreamSizeInBytes, eyeIndex,encode_info);
         }
         
@@ -776,6 +793,7 @@ int NvEncoder::GetEncodedPacketOnce(uint8_t* buf, int &len, uint64_t& index, boo
 			NVENC_API_CALL(m_nvenc.nvEncUnmapInputResource(m_hEncoder, m_vMappedRefBuffers[m_iGot % m_nEncoderBuffer]));
 			m_vMappedRefBuffers[m_iGot % m_nEncoderBuffer] = nullptr;
 		}
+        out_inedx_++;
 		m_iGot++;
 	}
 	return len;

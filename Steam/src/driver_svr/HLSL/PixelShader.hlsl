@@ -13,9 +13,8 @@ cbuffer VSConstantBuffer : register(b1)
 	float saturation;
 	float contrast;
 	float gamma;
-	float a;
-	float b;
-	float c;
+	float2 radius;   //卷积半径   目前试了0.75 1.0 1.25
+	float w_cull;    //剔除权重   目前锁定在 0-0.25 大于0.25会过度锐化
 	float sharper;
 
 }
@@ -72,7 +71,7 @@ struct Pixel
 const static float DX = 1.f/ picturesize.x;
 const static float DY = 1.f/ picturesize.y;
 const static float sharpenNeighbourWeight = -sharper / 8.f;
-
+const static float sharpenNeighbourWeight2 = -sharper / 4.f;
 float4 sharpen(Interpolants In)
 {
 	float2 u_TextureCoordOffset_Dis1[9] = {
@@ -87,12 +86,15 @@ float4 sharpen(Interpolants In)
 	float4 sample[9];
 	for (int i = 0; i < 9; i++)
 	{
+		texcoord.x = texcoord.x + u_TextureCoordOffset_Dis1[i].x / picturesize.x;
+		texcoord.y = texcoord.y + u_TextureCoordOffset_Dis1[i].y/ picturesize.y;
 		if (In.View == (uint)0) { // Left View
-			sample[i] = LtxDiffuse.Sample(samLinear, texcoord + u_TextureCoordOffset_Dis1[i] / picturesize.x);
+			
+			sample[i] = LtxDiffuse.Sample(samLinear, texcoord);
 		}
 		else if (In.View == (uint)1)
 		{
-			sample[i] = RtxDiffuse.Sample(samLinear, texcoord + u_TextureCoordOffset_Dis1[i] / picturesize.x);
+			sample[i] = RtxDiffuse.Sample(samLinear, texcoord);
 		}
 		
 	}
@@ -102,6 +104,79 @@ float4 sharpen(Interpolants In)
 		(5.0 * sample[4])
 		)  ;
 	return Outcolor;
+}
+
+
+float4 sharpen_VD(Interpolants In)
+{
+	float3 a, b, c, d, e;
+
+
+	if (In.View == (uint)0) { // Left View
+		a = LtxDiffuse.Sample(samLinear, In.texcoord).rgb;
+		b = LtxDiffuse.Sample(samLinear, In.texcoord + float2(-radius.x / picturesize.x, 0.0f)).rgb;
+		c = LtxDiffuse.Sample(samLinear, In.texcoord + float2(0.0f, -radius.y / picturesize.y)).rgb;
+		d = LtxDiffuse.Sample(samLinear, In.texcoord + float2(radius.x / picturesize.x, 0.0f)).rgb;
+		e = LtxDiffuse.Sample(samLinear, In.texcoord + float2(0.0f, radius.y / picturesize.y)).rgb;
+	}
+	else if (In.View == (uint)1)
+	{
+		a = RtxDiffuse.Sample(samLinear, In.texcoord).rgb;
+		b = RtxDiffuse.Sample(samLinear, In.texcoord + float2(-radius.x / picturesize.x, 0.0f)).rgb;
+		c = RtxDiffuse.Sample(samLinear, In.texcoord + float2(0.0f, -radius.y / picturesize.y)).rgb;
+		d = RtxDiffuse.Sample(samLinear, In.texcoord + float2(radius.x / picturesize.x, 0.0f)).rgb;
+		e = RtxDiffuse.Sample(samLinear, In.texcoord + float2(0.0f, radius.y / picturesize.y)).rgb;
+	}
+	float2 minMaxG = float2(min(a.g, min(b.g, min(c.g, min(d.g, e.g)))), max(a.g, max(b.g, max(c.g, max(d.g, e.g)))));
+	minMaxG.y += 0.0005f;
+	float AA = sqrt(min(1.0 - minMaxG.y, minMaxG.x) / minMaxG.y);
+	float w = -w_cull * AA;
+
+
+	float4 outColor;
+	outColor.rgb = (w * (b + c + d + e) + a) / (w * 4.0 + 1.0);
+ 
+
+	return outColor;
+
+}
+
+
+float4 GetSharpenNeighborComponent3(float2 uv, float xoff, float yoff, uint view) {
+	float4 pixel = float4(0, 0, 0, 0);
+	if (view == (uint)0) { // Left View
+
+		pixel = LtxDiffuse.Sample(bilinearSampler, uv + float2(xoff, yoff)).rgba * sharpenNeighbourWeight2;
+	}
+	else if (view == (uint)1)
+	{
+		pixel = RtxDiffuse.Sample(bilinearSampler, uv + float2(xoff, yoff)).rgba * sharpenNeighbourWeight2;
+	}
+	return pixel;
+}
+float4 sharpen3(Interpolants In)
+{
+	float4 pixel;
+	float2 uv = float2(In.texcoord.x, In.texcoord.y);
+
+	if (In.View == (uint)0) { // Left View
+		pixel = LtxDiffuse.Sample(bilinearSampler, uv).rgba * (sharper + 1.f);
+	}
+	else if (In.View == (uint)1)
+	{
+		pixel = RtxDiffuse.Sample(bilinearSampler, uv).rgba * (sharper + 1.f);
+	}
+
+
+	
+	pixel += GetSharpenNeighborComponent3(uv, 0, -DY, In.View);
+	
+	pixel += GetSharpenNeighborComponent3(uv, +DX, 0, In.View);
+
+	pixel += GetSharpenNeighborComponent3(uv, 0, +DY, In.View);
+
+	pixel += GetSharpenNeighborComponent3(uv, -DX, 0, In.View);
+	return pixel;
 }
 
 float4 GetSharpenNeighborComponent(float2 uv, float xoff, float yoff,uint view) {
@@ -289,9 +364,10 @@ float4 adjustment(float4 rgba)
 
 		//return Out;
 	Pixel Out;
-	if (abs(sharper - 1) > 0.0001)
+	if (abs(sharper -0) > 0.0001)
 	{
-		    Out.color = sharpen2(In);
+		    Out.color = sharpen3(In);
+			
 	}
 	else
 	{

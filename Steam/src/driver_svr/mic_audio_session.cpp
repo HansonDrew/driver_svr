@@ -23,7 +23,7 @@ bool MicAudioSession::StartUp(bool is_dp)
 	bool ret = true;
 	device_ = MicrophoneDeviceInterface::Create(&miclog_);
 	ret=device_->Start(!is_dp);
-	device_->SetVolum(50);
+	device_->SetVolum(gConfigReader.GetMicVolumeValue());
 	if (ret )
 	{
 		RVR_LOG_A("mic device start up ok");

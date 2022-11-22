@@ -3,7 +3,9 @@
 
 #include <d3d11.h>
 #include <vector>
-#include<atomic>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
 #include "VideoEncoderConfig.h"
 #include "../RVRPlugin/RVRPluginDefinitions.h"
 struct VideoEncoderFrameConfig;
@@ -36,6 +38,7 @@ public:
 	
 	virtual void Shutdown() = 0;
 
+	virtual void SetBitRate(VideoEncoderFrameConfig* frameConfig) = 0;
 	void SetRtpThreadId(int thread_id) { rtp_thread_id_ = thread_id; }
 	virtual bool SupportsReferenceFrameInvalidation() = 0;
 	virtual void InvalidateReferenceFrame(uint64_t videoFrameIndex) = 0;
@@ -45,13 +48,16 @@ public:
 	FILE* pright = NULL;
 	bool spspps_start_ = false;
 
-	HANDLE mHThreadEvent;
+	//HANDLE mHThreadEvent;
 	int mIndex;
 	bool mEncoderRun;
 	int rtp_thread_id_;
 	OutFrame mOutFrame[OUTBUFSIZE];
 	uint64_t mRenderCost[POSELISTSIZE];
 	atomic_ullong out_frame_index_;
+	uint64_t last_produce_time_ns_;
+	std::mutex frame_index_mutex_;
+	std::condition_variable frame_index_cv_;
 	int mNoIDRTime=0;
 	bool init_success_ = false;
 protected:

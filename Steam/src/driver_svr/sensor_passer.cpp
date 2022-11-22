@@ -4,7 +4,7 @@
 #include "PredictPose/picocontroller_interface.h"
 #include "sensor_add_queue.h"
 #include "config_reader.h"
-
+#include "RVRLogger.h"
 extern ConfigReader gConfigReader;
 extern PicoVRDriver g_svrDriver; 
 SensorPasser* SensorPasser::sensor_passer_instance_;
@@ -309,10 +309,10 @@ void SensorPasser::AddSensorByNotifyEvent(int64_t present_time,  int wait_time)
 	int64_t sdk_offset = hmd_pose.poseTimeStamp - last_get_sdk_time_;
 	int64_t recv_offset = hmd_pose.poseRecvTime - last_sensor_get_time_;
 	bool predict = false;
-	if ((last_present_time_>0)&&((present_offset-per_frame)>2500000))
+	/*if ((last_present_time_>0) && ((present_offset - per_frame)>2500000))
 	{
 		predict = true;
-	
+
 		//RVR_LOG_A("need predict %lld sdk %lld predict-sdk =%lld",present_offset-per_frame,sdk_offset-per_frame,present_offset-sdk_offset);
 		//RVR_LOG_A("present with predict offset=%lld sdk offset=%lld recv offset=%lld", (present_offset) / 1000, (sdk_offset) / 1000, (hmd_pose.poseRecvTime - last_sensor_get_time_) / 1000);
 		last_get_sdk_time_ = hmd_pose.poseTimeStamp;
@@ -321,7 +321,7 @@ void SensorPasser::AddSensorByNotifyEvent(int64_t present_time,  int wait_time)
 		RVR::RVRPoseHmdData input_sensor = hmd_pose_;
 		double predict_to_time = hmd_pose_.poseTimeStamp + recv_offset -per_frame;
 		PredictMotionRvrHmd(input_sensor, predict_to_time, hmd_pose_);
-		
+
 		predict_to_time = left_controller_pose.timestamp + recv_offset - per_frame;
 		RVR::RVRControllerData input_left_sensor =left_controller_pose;
 		PredictMotionRvrController(input_left_sensor, predict_to_time, left_controller_pose);
@@ -335,7 +335,7 @@ void SensorPasser::AddSensorByNotifyEvent(int64_t present_time,  int wait_time)
 			//LeftKalman.DoKalma(left_controller_pose);
 			//RightKalman.DoKalma(right_controller_pose);
 		}
-	}
+	}*/
 	int64_t addts = nowInNs();
 	//RVR_LOG_A("sensor sub=%lld", (addts -hmd_pose.poseRecvTime)/1000000);
 	//g_svrDriver.AddControllerPose(0, &left_controller_pose);
@@ -354,6 +354,10 @@ void SensorPasser::AddSensorByNotifyEvent(int64_t present_time,  int wait_time)
 	g_svrDriver.AddControllerPose(0, &left_controller_pose);
 	g_svrDriver.AddControllerPose(1, &right_controller_pose);
 	g_svrDriver.AddHmdPose(&hmd_pose);
+
+	g_svrDriver.GetStreamingHmdDriver()->hmd_data = hmd_pose;
+	g_svrDriver.GetStreamingHmdDriver()->left_data = left_controller_pose;
+	g_svrDriver.GetStreamingHmdDriver()->right_data = right_controller_pose;
 	char msg[2048] = { 0 };
 	sprintf_s(msg, "add predict %d rotation %lf,%lf,%lf,%lf,  pose %lf,%lf,%lf   \n",
 		predict,
@@ -477,7 +481,17 @@ void  SensorPasser::SetAllSensor(RVR::RVRPoseHmdData hmd_pose_t, RVR::RVRControl
 	controller_pose_[1] = right_controller_pose;
 	all_mutex_.unlock();
 	g_svrDriver.sensor_queue_.SetPose(hmd_pose_t, left_controller_pose, right_controller_pose);
-	
+	 //RVR::RVR_LOG_A("sensor:i=%d,h=%f,%f,%f,%f,%f,%f,%f,%f,%f\
+		//r=%f,%f,%f,%f,%f,%f,%f,%f,%f,ts=%lld,h_i=%d",
+		//hmd_pose_.hmd_index,
+		//hmd_pose_.position.x, hmd_pose_.position.y, hmd_pose_.position.z,
+		//hmd_pose_.linearVelocity.x, hmd_pose_.linearVelocity.y, hmd_pose_.linearVelocity.z,
+		//hmd_pose_.angularVelocity.x, hmd_pose_.angularVelocity.y, hmd_pose_.angularVelocity.z,
+		// right_controller_pose.position.x, right_controller_pose.position.y, right_controller_pose.position.z,
+		// right_controller_pose.vecVelocity.x, right_controller_pose.vecVelocity.y, right_controller_pose.vecVelocity.z,
+		// right_controller_pose.vecAngularVelocity.x, right_controller_pose.vecAngularVelocity.y, right_controller_pose.vecAngularVelocity.z,
+		//hmd_pose_.poseTimeStamp,hmd_pose_.hmd_index);
+
 	SetEvent(new_sensor_notify_);
 
 	

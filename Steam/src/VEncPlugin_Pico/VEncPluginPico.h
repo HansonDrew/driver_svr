@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../RVRPlugin/IVEncPlugin.h"
+#include "../RateDetecter.h"
 #include <string>
 
 
@@ -33,7 +34,7 @@ public:
 	uint64_t mLastStatisticsTimestamp = 0;
 	uint64_t mStatisticsCount = 0;
 	float mAverageFrame=0.f;
-
+	 
 private:
 	std::string instance_ptr_str_;
 	VideoEncoder* encoder;

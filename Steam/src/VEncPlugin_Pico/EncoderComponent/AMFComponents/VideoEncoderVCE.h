@@ -24,6 +24,7 @@ public:
 	void Shutdown() override;
 	void Flush() override;
 	void Transmit(ID3D11Texture2D* pTexture, VideoEncoderFrameConfig* frameConfig) override;
+	void SetBitRate(VideoEncoderFrameConfig* frameConfig) override;
 	bool SupportsReferenceFrameInvalidation() override { return false; };
 	void InvalidateReferenceFrame(uint64_t videoFrameIndex) override {};
 #define surfacenum 6
@@ -34,7 +35,7 @@ public:
 
 	//Called from AsyncDataProcessor
 	void DeferSend(const void* data, size_t len, void* userData);
-
+	int64_t out_inedx_ = 0;
 private:
 
 	void ApplyFrameType(const amf::AMFSurfacePtr& surface, VideoEncoderFrameConfig* frameConfig);

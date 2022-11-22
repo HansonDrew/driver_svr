@@ -9,6 +9,7 @@
 #include<map>
 #include <mutex>
 #include "AADT_Func.h"
+#include "../RVRPlugin/RVRPluginDefinitions.h"
 //#define PICO_PRESENT_MODE
 #define SplitTextureSize 4
 #define picomode
@@ -34,7 +35,7 @@ public:
 	bool Initialize(ID3D11Device* device, int w, int h);
 	void Add(LayerDesc* layerDesc);
 	void Merge();
-	void Merge2to1(int index);
+	void Merge2to1(int index,RVR::RVRPoseHmdData hmd ,RVR::RVRControllerData left,RVR::RVRControllerData right,uint64_t poseindex=0,int hmd_index=0);
 	void Resize();
 #ifdef PICO_PRESENT_MODE
 	void Save();
@@ -64,7 +65,9 @@ private:
 	int split_render_index = 0;
 	int split_encoder_index = -1;
 	std::mutex mutex_split_encoder_index;
-	
+	RVR::RVRPoseHmdData last_hmd = {0}; 
+	RVR::RVRControllerData last_left = { 0 };
+	RVR::RVRControllerData last_right = { 0 };
 	ID3D11ShaderResourceView* AsShaderResource(ID3D11Device* device, ID3D11Texture2D* texture, int texture2D_mipLevels = 1);
 	void DestroyResourceMap();
 private:

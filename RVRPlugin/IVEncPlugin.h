@@ -16,6 +16,7 @@ struct EncodeOutWithInfo
 	int autoRateFlag;
 	int bitRate;
     int index;
+    uint8_t PloadTpye;
 };
 typedef int (*PushEncodedFrameFun)(char*, int, int, EncodeOutWithInfo);///char buf[],int buflen,int index
 typedef int (*LogFun)(const char*, int);///char buf[],int buflen 
@@ -62,8 +63,8 @@ enum VEncFrameFlags {
     // Flag to update the bitrate
     VENC_BITRATE_UPDATE = (1 << 8),
     VENC_BITRATE_UPDATE_BY_USER = (1 << 9),
-    VENC_BITRATE_UPDATE_BY_CONFIG = (1 << 10)
-
+    VENC_BITRATE_UPDATE_BY_CONFIG = (1 << 10),
+    VENC_BITRATE_UPDATE_BY_NET = (1 << 11)
 };
 
 //******************************************************************************
@@ -104,6 +105,7 @@ struct VEncFrameConfig {
 
     // Frame number
     int         frameNumber;
+    int         net_cost;
 };
 
 //******************************************************************************

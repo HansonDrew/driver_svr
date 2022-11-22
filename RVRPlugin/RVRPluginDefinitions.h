@@ -6,7 +6,7 @@
 #pragma once
 
 #include <stdint.h>
-
+ 
 #define OUTBUFSIZE 200
 #define POSELISTSIZE 100
 namespace RVR
@@ -189,6 +189,8 @@ struct RVRPoseHmdData
     uint64_t endGameRenderStamp;
     uint64_t beginEncodeStamp;
     uint64_t endEncodeStamp;
+    int net_cost;
+    int hmd_index;
 };
 
 

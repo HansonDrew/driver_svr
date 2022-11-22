@@ -17,26 +17,11 @@ SensorManger* SensorManger::GetInstance()
 }
 void SensorManger::GetSensor(PictureControlType control_type, int eye_index, RVR::RVRPoseHmdData& out_sensor) 
 {
-	if (control_type== PictureControlType::KBigPicture)
-	{
-		RVR::RVRPoseHmdData frame_sensor= sensor_buf_[left_inedx_ % SensorBufSize];
-		out_sensor = sensor_buf_[left_inedx_ % SensorBufSize];
-		left_inedx_++;
-		right_index_++;
-	} 
-	else
-	{
-		if (eye_index==0)
-		{
-			out_sensor = sensor_buf_[left_inedx_ % SensorBufSize];
-			left_inedx_++;
-		} 
-		else
-		{
-			out_sensor = sensor_buf_[right_index_ % SensorBufSize];
-			right_index_++;
-		}
-	}
+	 
+		RVR::RVRPoseHmdData frame_sensor= sensor_buf_[send_inedx_ % SensorBufSize];
+		out_sensor = sensor_buf_[send_inedx_ % SensorBufSize];
+	 
+	 
 	//DriverLog("GetSensor index=%llu r=%f,%f,%f,%f p=%f,%f,%f,",
 	//	out_sensor.poseTimeStamp, out_sensor.rotation.w, out_sensor.rotation.x,
 	//	out_sensor.rotation.y, out_sensor.rotation.z,
@@ -130,5 +115,5 @@ bool SensorManger::ConvertToControllerSensor(uint8_t* buf, int length, int contr
 
 void SensorManger::SetIndex(int index)
 {
-	left_inedx_ = index;
+	send_inedx_ = index;
 }

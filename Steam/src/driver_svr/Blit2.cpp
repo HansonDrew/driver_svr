@@ -53,9 +53,9 @@ namespace Blit2 {
 		float saturation;
 		float contrast;
 		float gamma;
-		float a;
-		float b;
-		float c;
+		float radius_x;
+		float radius_y;
+		float w_cull;
 		float shaper;
 	};
 
@@ -100,7 +100,8 @@ namespace Blit2 {
 	ID2D1RenderTarget* m_pd2dRenderTarget;				// D2D渲染目标
 	IDWriteFactory* m_pdwriteFactory;					// DWrite工厂
 
-	ID2D1SolidColorBrush* m_pColorBrush;	    // 单色笔刷
+	ID2D1SolidColorBrush* m_pWhiteBrush;	    // 单色笔刷
+	ID2D1SolidColorBrush* m_pRedBrush;
 	IDWriteFont* m_pFont;					// 字体
 	IDWriteTextFormat* m_pTextFormat;		// 文本格式
 
@@ -438,14 +439,19 @@ namespace Blit2 {
 		adjustment.bright = gConfigReader.GetBrightValue();
 		adjustment.saturation = gConfigReader.GetSaturationValue();
 		adjustment.contrast = gConfigReader.GetContrastValue();
+		adjustment.gamma = gConfigReader.GetGammaValue();
 		if ((0x8000 & GetAsyncKeyState('S')) != 0 && (0x8000 & GetAsyncKeyState('O')) != 0)
+		{
+			adjustment.shaper = 3.5;
+		}
+		else
 		{
 			adjustment.shaper = 1;
 		}
-		else 
-		{
-			adjustment.shaper = 1.6;
-		}
+		adjustment.shaper = gConfigReader.GetSharperValue();
+
+		adjustment.radius_x = adjustment.radius_y = gConfigReader.GetSharperValue();
+		adjustment.w_cull = gConfigReader.GetSharperWeightValue();
 		
 		deviceContext->UpdateSubresource(mpAdjustMentBuffer, 0, nullptr, &adjustment, 0, 0);
 		deviceContext->PSSetConstantBuffers(1, 1, &mpAdjustMentBuffer);
@@ -527,7 +533,8 @@ namespace Blit2 {
 		}
 		adjustment.shaper = gConfigReader.GetSharperValue();
 	 
-		
+		adjustment.radius_x= adjustment.radius_y= gConfigReader.GetSharperValue();
+		adjustment.w_cull= gConfigReader.GetSharperWeightValue();
 		deviceContext->UpdateSubresource(mpAdjustMentBuffer, 0, nullptr, &adjustment, 0, 0);
 		deviceContext->PSSetConstantBuffers(1, 1, &mpAdjustMentBuffer);
 
@@ -824,9 +831,10 @@ namespace Blit2 {
 		else if (hr == S_OK)
 		{
 			// 创建固定颜色刷和文本格式
-			m_pd2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White),&m_pColorBrush);
+			m_pd2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White),&m_pWhiteBrush);
+			m_pd2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red), &m_pRedBrush);
 			m_pdwriteFactory->CreateTextFormat(L"宋体", nullptr, DWRITE_FONT_WEIGHT_NORMAL,
-				DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 70, L"zh-cn",&m_pTextFormat);
+				DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 50, L"zh-cn",&m_pTextFormat);
 		}
 		else
 		{
@@ -834,14 +842,22 @@ namespace Blit2 {
 			OutputDebugStringW(L"d2d text error");
 		}
 	}
-	void WirteText(WCHAR* text)
+	void WirteText(WCHAR* text, color_flag flag)
 	{
 		if (m_pd2dRenderTarget != nullptr)
 		{
 			m_pd2dRenderTarget->BeginDraw();			
-
+			ID2D1SolidColorBrush* pBrush=NULL;
+			if (flag==color_flag::white)
+			{
+				pBrush = m_pWhiteBrush;
+			} 
+			else if(flag==color_flag::red)
+			{
+				pBrush = m_pRedBrush;
+			}
 			m_pd2dRenderTarget->DrawTextW(text, (UINT32)wcslen(text), m_pTextFormat ,
-				D2D1_RECT_F{ 400.0f, 400.0f,1200.0f, 1200.0f }, m_pColorBrush );
+				D2D1_RECT_F{ 300.0f, 300.0f,1200.0f, 1200.0f }, pBrush);
 			HR(m_pd2dRenderTarget->EndDraw());
 		}
 		deviceContext->Flush();

@@ -105,7 +105,13 @@ HRESULT VEncPluginPico::Initialize(RVR::VEncConfig* encConfig)
 	if (encoder != nullptr)
 	{
 		GLOBAL_DLL_CONTEXT_LOG()->LogAlways("=========  Encoder is  not  nullptr ========");
+		
 		encoder->mIndex = gEcoderIndex;
+		if (gEcoderIndex==1)
+		{
+			RateDetecter::GetInstance();
+			RateDetecter::GetInstance()->SetConfigRate(gEcoderIndex, gConfig.GetAverageBitRateValue(), gConfig.GetMaxBitRateValue());
+		}
 		encoder->CreateOutFrameBufferAndInitParts();
 		encoder->Initialize(config);
 		if ((gEncoderDeviceType == AMD_ENCODER) && (encoder->init_success_ == false))
@@ -188,16 +194,20 @@ HRESULT VEncPluginPico::Initialize(RVR::VEncConfig* encConfig)
 
 HRESULT VEncPluginPico::StopLoop() 
 {
-	ResetEvent(encoder->mHThreadEvent);
-	encoder->mEncoderRun = false;
+	ResetEvent(mHThreadEvent);
+	{
+		std::unique_lock<std::mutex> lock(encoder->frame_index_mutex_);
+		encoder->mEncoderRun = false;
+		encoder->frame_index_cv_.notify_one();
+	}
 	return 1;
 }
 
 HRESULT VEncPluginPico::Uninitialize()
 {
 	GLOBAL_DLL_CONTEXT_LOG()->LogTrace(__FUNCTION__);
-	
-	WaitForSingleObject(encoder->mHThreadEvent, 1500);
+	StopLoop();
+	WaitForSingleObject(mHThreadEvent, 1500);
 	if (nullptr != encoder)
 	{
 		encoder->Shutdown();
@@ -218,16 +228,7 @@ HRESULT VEncPluginPico::QueueBuffer(ID3D11Texture2D* inputBuffer, RVR::VEncFrame
 		memcpy_s(&config, sizeof(VideoEncoderFrameConfig), frameConfig, sizeof(RVR::VEncFrameConfig));
 		config.originPointer = static_cast<void*>(frameConfig);
 	    
-		if (gDecrease||((config.flags& RVR::VENC_BITRATE_UPDATE)&&(config.avgBitRate<0)))
-		{
-			RtpQualityHelper::GetInstance()->DecreaseBitRate(2);
-			int averageRate = 0;
-			int maxRate = 0;
-			RtpQualityHelper::GetInstance()->GetCurrentRate(averageRate, maxRate);
-			string msg = "debug decrease rate," + to_string(averageRate) + "," + to_string(maxRate);
-			GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
-			gDecrease = false;
-		}
+		
 		if (gBitRateControl>0)
 		{
 			if (gCurrentBitRate== MAXBITRATE|| gCurrentBitRate==MINBITRATE)
@@ -256,10 +257,30 @@ HRESULT VEncPluginPico::QueueBuffer(ID3D11Texture2D* inputBuffer, RVR::VEncFrame
 		if (gConfigRateChange > 0)
 		{
 			gConfigRateChange = gConfigRateChange - 1;
-			config.avgBitRate = gConfig.GetBitRate();
+			config.avgBitRate = gConfig.GetAverageBitRateValue();
 			config.maxBitRate = gConfig.GetMaxBitRateValue();
 			config.flags = config.flags | RVR::VENC_BITRATE_UPDATE_BY_CONFIG;
-
+			string msg = "update rate by config change average" + to_string(config.avgBitRate);
+			GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+			RateDetecter::GetInstance()->SetConfigRate(mIndex, gConfig.GetAverageBitRateValue(),gConfig.GetMaxBitRateValue());
+		}
+		else
+		{
+			//改配置的时候强行生效配置，不改配置再rate detect
+			if (gConfig.GetAutoRate()==1)
+			{
+				
+				RateDetecter::GetInstance()->DetectRateChange(frameConfig->net_cost);
+				int average_rate = 0;
+				int max_rate = 0;
+				if (RateDetecter::GetInstance()->GetChangeRateResult(average_rate, max_rate))
+				{
+					config.avgBitRate = average_rate;
+					config.maxBitRate = max_rate;
+					config.flags = config.flags | RVR::VENC_BITRATE_UPDATE_BY_NET;
+				}
+				
+			}
 		}
 		encoder->Transmit(inputBuffer, &config);
 	}
@@ -380,18 +401,18 @@ unsigned int __stdcall VEncPluginPico::DebugThread(LPVOID lpParameter)
 				gChangeGop = true;
 				GLOBAL_DLL_CONTEXT_LOG()->LogAlways("gChangeGop");
 			}
-			if ((0x8000 & GetAsyncKeyState('D')&& (0x8000 & GetAsyncKeyState('R')) != 0))
-			{
-				gDecrease = true;
-				GLOBAL_DLL_CONTEXT_LOG()->LogAlways("gDecrease");
-			}
-			if ((0x8000 & GetAsyncKeyState('H') && (0x8000 & GetAsyncKeyState('R')) != 0))
-			{
-				gIncrease = true;
-				GLOBAL_DLL_CONTEXT_LOG()->LogAlways("gIncrease");
-				RtpQualityHelper::GetInstance()->ForceMaxBitRate(gConfig.GetAverageBitRateValue(), gConfig.GetMaxBitRateValue());
-				gIncrease = false;
-			}
+			/*	if ((0x8000 & GetAsyncKeyState('D')&& (0x8000 & GetAsyncKeyState('R')) != 0))
+			 {
+				 gDecrease = true;
+				 GLOBAL_DLL_CONTEXT_LOG()->LogAlways("gDecrease");
+			 }
+			 if ((0x8000 & GetAsyncKeyState('H') && (0x8000 & GetAsyncKeyState('R')) != 0))
+			 {
+				 gIncrease = true;
+				 GLOBAL_DLL_CONTEXT_LOG()->LogAlways("gIncrease");
+				 RtpQualityHelper::GetInstance()->ForceMaxBitRate(gConfig.GetAverageBitRateValue(), gConfig.GetMaxBitRateValue());
+				 gIncrease = false;
+			 }*/
 			if ((0x8000 & GetAsyncKeyState('B')) != 0)
 			{
 				gChagneBitRate = true;
@@ -461,20 +482,38 @@ unsigned int __stdcall VEncPluginPico::PacketAndSendThread(LPVOID lpParameter)
 	uint64_t last_out_frame = 0;
 	uint64_t last_buf_index=0;
 	while (EncoderObj->mEncoderRun)
-	{	
-		if (last_out_frame== EncoderObj->out_frame_index_)
+	{
 		{
-			//sleep_micro_seconds(1);
-			Sleep(1);
-			continue;
+			std::unique_lock<std::mutex> lock(EncoderObj->frame_index_mutex_);
+			EncoderObj->frame_index_cv_.wait(
+				lock,
+				[=]
+				{
+					return last_out_frame < EncoderObj->out_frame_index_ || !EncoderObj->mEncoderRun;
+				}
+				);
+			//string msg = "FrameConsumeDelay eyeindex=" + to_string(eyeIndex)
+			//	+ " delay=" + to_string(nowInNs() - EncoderObj->last_produce_time_ns_)
+			//	+ " gap=" + to_string(EncoderObj->out_frame_index_ - last_out_frame);
+			//GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
 		}
+
 		if (EncoderObj==nullptr)
 		{
 			break;
 		}
 		 
 	    bufferIndex = last_out_frame;		
-		poseIndex = EncoderObj->mOutFrame[last_out_frame%OUTBUFSIZE].index;
+		
+		if (gConfig.BigPicture() == 1)
+		{
+			//大图模式，poseindex 每帧增加，编码器间隔调用，bufferindex间隔一帧增加1个，小图模式bufferindex=poseindex
+			poseIndex = EncoderObj->mOutFrame[last_out_frame % OUTBUFSIZE].index;
+		}
+		else if (gConfig.BigPicture() == 0)
+		{
+			poseIndex = bufferIndex;
+		}
 		eyeIndex = EncoderObj->mIndex;
 		if (last_buf_index !=0)
 		{
@@ -494,7 +533,7 @@ unsigned int __stdcall VEncPluginPico::PacketAndSendThread(LPVOID lpParameter)
 		
 		if (gLog)
 		{
-			int index = gConfig.BigPicture() == 1 ? poseIndex : bufferIndex;
+			int index =  poseIndex ;
 			string msg = "send thread eye index=" + to_string(eyeIndex) + "  poseindex=" + to_string(index)+
 			"bufindex= "+to_string(bufferIndex)+	"  outlastindex="+to_string(last_out_frame);
 			GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
@@ -532,8 +571,8 @@ unsigned int __stdcall VEncPluginPico::PacketAndSendThread(LPVOID lpParameter)
 		{
 			if (  rightgDstFlag == true)
 			{
-				RtpQualityHelper::GetInstance()->SetSocketParam(RtpPacket::GetInstance(0)->m_SocketClient,
-					RtpPacket::GetInstance(1)->m_SocketClient, gDstIp, gConfig.GetPortL(), gConfig.GetPortR());
+				//RtpQualityHelper::GetInstance()->SetSocketParam(RtpPacket::GetInstance(0)->m_SocketClient,
+					//RtpPacket::GetInstance(1)->m_SocketClient, gDstIp, gConfig.GetPortL(), gConfig.GetPortR());
 				rightgDstFlag = false;
 				if (gConfig.GetTcpValue() == 1)
 				{
@@ -574,18 +613,8 @@ unsigned int __stdcall VEncPluginPico::PacketAndSendThread(LPVOID lpParameter)
 			break;
 		}
 		RVR::RVRPoseHmdData currentPose;
-		uint64_t renderCost = 0;
-		if (gConfig.BigPicture() == 1)
-		{
-			//大图模式，poseindex 每帧增加，编码器间隔调用，bufferindex间隔一帧增加1个，
-			currentPose = gRenderPoseList[poseIndex % POSELISTSIZE];
-			renderCost = EncoderObj->mRenderCost[poseIndex % POSELISTSIZE];
-		}
-		else if (gConfig.BigPicture() == 0)
-		{
-			currentPose = gRenderPoseList[bufferIndex % POSELISTSIZE];
-			renderCost = EncoderObj->mRenderCost[bufferIndex % POSELISTSIZE];
-		}
+		uint64_t renderCost = 0; 
+		currentPose = gRenderPoseList[poseIndex % POSELISTSIZE];
 		quaternion.w = currentPose.rotation.w;
 		quaternion.x = currentPose.rotation.x;
 		quaternion.y = currentPose.rotation.y;
@@ -601,18 +630,27 @@ unsigned int __stdcall VEncPluginPico::PacketAndSendThread(LPVOID lpParameter)
 		adddata.predictedTimeMs = currentPose.predictedTimeMs;
 		int gamerender_cost = currentPose.endGameRenderStamp - currentPose.beginGameRenderStamp;
 		int encode_cost = currentPose.endEncodeStamp - currentPose.beginEncodeStamp;
-		int bit_rate = 0;
+		int average_rate = 0;
 		int max_rate = 0;
-		RtpQualityHelper::GetInstance()->GetCurrentRate(bit_rate, max_rate);
+		//RtpQualityHelper::GetInstance()->GetCurrentRate(bit_rate, max_rate);
 		int auto_rate = gConfig.GetAutoRateValue();
+		if (auto_rate==1)
+		{
+			average_rate = RateDetecter::GetInstance()->GetCurrentAverageRate();
+		} 
+		else
+		{
+			average_rate = gConfig.GetAverageBitRateValue();
+		}
+		gamerender_cost = (gamerender_cost + encode_cost) / 2 - 1;
+		encode_cost = gamerender_cost + 1;
 		adddata.gameRenderCost = gamerender_cost;
 		adddata.encodeCost = encode_cost;
 		adddata.autoRateFlag = auto_rate;
-		adddata.encodeRate = bit_rate;
+		adddata.encodeRate = average_rate;
 
-		/*string msg = "game rendercost:" + std::to_string((gamerender_cost) / 1000000.f) + "       encode cost:"+std::to_string((encode_cost) / 1000000.f);*/
-		string msg = "encode cost:"+std::to_string((encode_cost) / 1000000.f);
-		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+		/*string msg = "game rendercost:" + std::to_string((gamerender_cost) / 1000000.f) + "       encode cost:"+std::to_string((encode_cost) / 1000000.f);
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);*/
 
 		uint64_t packetsendbegin = nowInNs();
 		int bufferlen = EncoderObj->mOutFrame[bufferIndex % OUTBUFSIZE].len;
@@ -680,39 +718,35 @@ unsigned int __stdcall VEncPluginPico::PacketAndSendThread(LPVOID lpParameter)
 			}
 		}
 		string msg_slardar ="";
-		int averageRate = 0;
-		int maxRate = 0;
-		RtpQualityHelper::GetInstance()->GetCurrentRate(averageRate, maxRate);
+		 
 		if (gConfig.BigPicture() == 1)
 		{
 			string msg = "output log:" + to_string(poseIndex) + "," + to_string((float)renderCost / 1000000.f) + "," +
 				to_string((float)(packetsendbegin  - encodeBegin) / 1000000.f- (float)renderCost / 1000000.f - float(packetsendend - packetsendbegin) / 1000000.f) + "," + to_string(float(packetsendend - packetsendbegin) / 1000000.f) +
-				+"," + to_string(averageRate) + "," + to_string(maxRate);
+				+"," + to_string(average_rate) + "," + to_string(max_rate);
 			if (gLog)
 			{
 				GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
 			}
 			msg_slardar = msg_slardar + to_string(poseIndex) + "," + to_string((float)renderCost / 1000000000.f) + "," +
 				to_string((float)(packetsendbegin  - encodeBegin) / 1000000.f- (float)renderCost / 1000000.f - float(packetsendend - packetsendbegin) / 1000000.f) + "," + to_string(float(packetsendend - packetsendbegin) / 1000000.f) +
-				+"," + to_string(averageRate) + "," + to_string(maxRate) ;
+				+"," + to_string(average_rate) + "," + to_string(max_rate) ;
 			
 		}
 		else
 		{
-			if (EncoderObj->mIndex == 1)
-			{
-				string msg = "output log:" + to_string(poseIndex) + "," + to_string((float)renderCost / 1000000.f) + "," +
+			
+			string msg = "output log:" + to_string(poseIndex) + "," + to_string((float)renderCost / 1000000.f) + "," +
 					to_string((float)(packetsendbegin  - encodeBegin) / 1000000.f) + "," + to_string(float(packetsendend - packetsendbegin) / 1000000.f) +
-					"," + to_string(averageRate) + "," + to_string(maxRate);
-				if (gLog)
-				{
-					GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
-				}
+					"," + to_string(average_rate) + "," + to_string(max_rate);
+			if (gLog)
+			{
+				GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
 			}
-
+			
 			msg_slardar = msg_slardar + to_string(poseIndex) + "," + to_string((float)renderCost / 1000.f) + "," +
 				to_string((float)(packetsendbegin / 1000 - encodeBegin) / 1000.f) + "," + to_string(float(packetsendend - packetsendbegin) / 1000000.f) +
-				+"," + to_string(averageRate) + "," + to_string(maxRate) ;
+				+"," + to_string(average_rate) + "," + to_string(max_rate) ;
 
 		}
 
@@ -743,6 +777,6 @@ unsigned int __stdcall VEncPluginPico::PacketAndSendThread(LPVOID lpParameter)
 		}
 
 	}
-	SetEvent(EncoderObj->mHThreadEvent);
+	SetEvent( EncPluginObj->mHThreadEvent);
 	return 1;
 }

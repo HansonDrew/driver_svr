@@ -176,7 +176,11 @@ void ExtractDriverPose(vr::DriverPose_t* pose, RVR::RVRPoseHmdData* data)
     pose->shouldApplyHeadModel = false;
     pose->willDriftInYaw = false;
 }
-
+void ExtractRVRPoseHmdData(RVR::RVRPoseHmdData* out_data, const vr::HmdMatrix34_t* in_pPose) 
+{
+	ExtractRotation(&(out_data->rotation), in_pPose);
+	ExtractPosition(&(out_data->position), in_pPose);
+}
 //-----------------------------------------------------------------------------
 void ExtractRVRPoseHmdData(vr::DriverPose_t* pose, RVR::RVRPoseHmdData* data)
 //-----------------------------------------------------------------------------
@@ -217,7 +221,49 @@ void ExtractRVRPoseHmdData(vr::DriverPose_t* pose, RVR::RVRPoseHmdData* data)
 
     
 }
+void GetSubAngles(RVR::RVRQuaternion rotation1, RVR::RVRQuaternion rotation2, double& pitch, double& yaw, double& roll)
+{
+    Eigen::Quaterniond r1 = Eigen::Quaterniond(rotation1.w, rotation1.x, rotation1.y, rotation1.z);
+    Eigen::Quaterniond r2 = Eigen::Quaterniond(rotation2.w, rotation2.x, rotation2.y, rotation2.z);
+    Eigen::Matrix3d m2 = r2.matrix();
+    m2=m2.inverse();
+    Eigen::Matrix3d m1 = r1.matrix();
+    Eigen::Matrix3d m3 = m1 * m2;
+    Eigen::Vector3d eulerAngle = m3.matrix().eulerAngles(2, 1, 0);
+	eulerAngle = eulerAngle.transpose();
+	//rz, ry, rx
+	roll = eulerAngle[0];
+	yaw = eulerAngle[1];
+	pitch = eulerAngle[2];
+	pitch = std::fmod(pitch, 3.1415926f);
+	yaw = std::fmod(yaw, 3.1415926f);
+	roll = std::fmod(roll, 3.1415926f);
+	if (pitch < 0.f)
+	{
+		pitch = 3.1415926f - pitch;
+	}
 
+	if (yaw < 0.f)
+	{
+		yaw = 3.1415926f - yaw;
+	}
+
+	if (roll < 0.f)
+	{
+		roll = 3.1415926f - roll;
+	}
+
+
+	roll = roll * 180.f / 3.1415926f;
+	yaw = yaw * 180.f / 3.1415926f;
+	pitch = pitch * 180.f / 3.1415926f;
+
+
+	pitch = std::fmod(pitch, 360);
+	yaw = std::fmod(yaw, 360);
+	roll = std::fmod(roll, 360);
+
+}
 void ExtractRVRControllerPoseData(vr::DriverPose_t* pose, RVR::RVRControllerData* data) 
 {
     int connect_state =(int) RVR::RVRControllerConnectionState::kConnected;

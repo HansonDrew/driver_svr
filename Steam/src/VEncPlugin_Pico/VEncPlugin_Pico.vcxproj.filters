@@ -345,6 +345,9 @@
     <ClInclude Include="fec_packet.h">
       <Filter>pxrTool</Filter>
     </ClInclude>
+    <ClInclude Include="RateDetecter.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -463,6 +466,9 @@
     </ClCompile>
     <ClCompile Include="fec_packet.cpp">
       <Filter>pxrTool</Filter>
+    </ClCompile>
+    <ClCompile Include="RateDetecter.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

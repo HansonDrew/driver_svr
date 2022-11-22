@@ -25,6 +25,7 @@ PicoVRDriver g_svrDriver;
 #include "Util.h"
 #include "../../Eigen/Geometry"
 #include "../../Eigen/Core"
+#include "sensor_passer.h"
 ConfigReader gConfigReader;
 PluginManger gPluginManger;
 //end
@@ -346,9 +347,14 @@ void FileSensorTest()
 	int add_time = 0;
 	if (in)
 	{
-		while (getline(in, line))
+		
+		while (1)
 		{
-
+			int64_t read_begin = RVR::nowInNs();
+			if (!getline(in, line))
+			{
+				break;
+			}
 			std::string work_str = line;
 			work_str = work_str.substr(work_str.find("sensertest:") + substrlen, work_str.length() - work_str.find("sensertest:") - substrlen);
 			hmd_pose.qRotation.w = atof(work_str.substr(0, work_str.find_first_of(",")).c_str());
@@ -404,22 +410,23 @@ void FileSensorTest()
 			work_str = work_str.substr(work_str.find_first_of(",") + 1, work_str.length() - work_str.find_first_of(",") - 1);
 
 			int64_t ts = atoll(work_str.substr(0, work_str.find_first_of(",")).c_str());
+
+			int64_t read_end = RVR::nowInNs();
 			if (last_ts > 0)
 			{
-				int sleep_time = (ts - last_ts + 500000) / 1000000;
+				int sleep_time = (ts - last_ts + 500000+read_begin- read_end) / 1000000;
 				if (sleep_time<0)
 				{
 					RVR_LOG_A("catch");
 				}
-				Sleep(sleep_time);
+				else
+				{
+					Sleep(sleep_time);
+				}
+			
 			}
 			last_ts = ts;
-			if (add_time%5!=0)
-			{
-				add_time++;
-				continue;
-			}
-			add_time++;
+			
 			if (g_svrDriver.GetHmdActiveType_() == (int)Hmd_Active_Type::Streaming)
 			{
 
@@ -472,6 +479,13 @@ void FileSensorTest()
 				}
 
 			}
+			RVR::RVRPoseHmdData hmd = {0};
+			RVR::RVRControllerData left = { 0 };
+			RVR::RVRControllerData right = { 0 };
+			ExtractRVRPoseHmdData(&hmd_pose, &hmd);
+			ExtractRVRControllerPoseData(&left_pose, &left);
+			ExtractRVRControllerPoseData(&right_pose, &right);
+			//SensorPasser::GetInstance()->SetAllSensor(hmd,left,right);
 			///*printf("%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",
 			//	w, x, y, z, px, py, pz,
 			//	wl, xl, yl, zl, pxl, pyl, pzl,
@@ -487,7 +501,8 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 
 	vr::DriverPose_t base_pose = g_svrDriver.GetStreamingHmdDriver()->GetPose();
 	set_test_basepose(base_pose);
-
+	base_pose.qRotation.w = 1;
+	base_pose.qRotation.x = base_pose.qRotation.y = base_pose.qRotation.z = 0;
 	ExtractRVRPoseHmdData(&base_pose, &g_test_rvrhmd);
 	base_pose.poseTimeOffset = 0;
 	base_pose.result= vr::TrackingResult_Running_OK;
@@ -496,31 +511,49 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 	vr::DriverPose_t hmd_pose = base_pose;
 	vr::DriverPose_t left_pose = base_pose;
 	left_pose.vecPosition[2] = left_pose.vecPosition[2] - 0.6;
-	left_pose.vecPosition[1] = left_pose.vecPosition[1] - 0.15;
+	left_pose.vecPosition[1] = left_pose.vecPosition[1] -2.15;
 	left_pose.vecPosition[0] = left_pose.vecPosition[0] - 0.2;
 	vr::DriverPose_t right_pose = base_pose;
 	right_pose.vecPosition[2] = right_pose.vecPosition[2] - 0.6;
 	right_pose.vecPosition[1] = right_pose.vecPosition[1] - 0.15;
 	right_pose.vecPosition[0] = right_pose.vecPosition[0] + 0.2;
-	int sleep_time =5;
-	float base_v = 0.8f;
-	float left_add_x = base_v * sleep_time / 1000.f;
-	float right_add_x = base_v * sleep_time / 1000.f;
-	float hmd_add_x = 0.2;
+	int sleep_time =11;
+	float base_v = 0.35f;
+	float left_add_x = base_v * (float)sleep_time / 1000.f;
+	float right_add_x = base_v * (float)sleep_time / 1000.f;
+	float hmd_add_x = 0;
 	float hmd_add_v = hmd_add_x * sleep_time / 1000.f;
-	base_pose.vecVelocity[0] = base_v;
-	hmd_pose.vecVelocity[0] = base_v;
-	left_pose.vecVelocity[0] = base_v;
-	right_pose.vecVelocity[0] = base_v;
+	base_pose.vecVelocity[0] = 0;
+	hmd_pose.vecVelocity[0] = 0;
 
 	Eigen::Vector3d hmd_angle = {0,0,0};
-	float angle_speed = 60.f/1000.f*(float)sleep_time;
-	int add_flag = 1;
+	float angle_speed = 25.f/1000.f*(float)sleep_time;
+	float add_flag = 1;
 	int add_index = 0;
 	int64_t last_add = 0;
+	float direction_flag = 1;
+
+	float r_x = 0;
+	float r_z = 0;
 	while (g_test_sensor&&(!g_svrDriver.m_bExitEventThread))
 	{
-		 
+		
+		 left_add_x = direction_flag* base_v * (float)sleep_time / 1000.f;
+		 right_add_x = direction_flag * base_v * (float)sleep_time / 1000.f;
+		 left_pose.vecVelocity[0] =- direction_flag * base_v;
+		 right_pose.vecVelocity[0] = direction_flag * base_v;
+
+		 if (g_test_sensor_mode==0)
+		 {
+			  hmd_add_x = 0;
+			  hmd_add_v =0;
+		 }else if (g_test_sensor_mode==3)
+		 {
+			
+			 hmd_add_x = direction_flag*base_v * (float)sleep_time / 1000.f;;
+			 hmd_add_v = direction_flag * base_v;
+			 hmd_pose.vecVelocity[0] = direction_flag * base_v;
+		 }
 		if (g_test_sensor_mode==8)
 		{
 			FileSensorTest();
@@ -528,18 +561,14 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 		}
 		if (g_test_sensor_mode==7)// 头 手同轴转动
 		{
-		/*	hmd_pose.vecVelocity[0] = 2;
-			left_pose.vecVelocity[0] = 3;
-			right_pose.vecVelocity[0] = 6;*/
-
-			hmd_pose.vecAngularVelocity[1] = 6*60.f / 1000.f*add_flag * DEGREES_TO_RADIANS;
+			hmd_pose.vecAngularVelocity[1] = 6 * 60.f / 1000.f * add_flag * DEGREES_TO_RADIANS;
 			left_pose.vecAngularVelocity[1] = 3;
 			left_pose.vecAngularVelocity[0] = 3;
 			right_pose.vecAngularVelocity[0] = 6;
-			hmd_angle[1]= hmd_angle[1] +  angle_speed*add_flag;
-			if (fabs(hmd_angle[1])>30)
+			hmd_angle[1] = hmd_angle[1] + angle_speed * add_flag;
+			if (fabs(hmd_angle[1]) > 45)
 			{
-				add_flag = add_flag*(- 1);
+				add_flag = add_flag * (-1);
 			}
 			Eigen::Vector3d hmd_raduabs = { 0,hmd_angle[1] * DEGREES_TO_RADIANS,0 };
 			Eigen::AngleAxisd rollAngle(Eigen::AngleAxisd(hmd_raduabs(0), Eigen::Vector3d::UnitX()));
@@ -553,10 +582,10 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 			hmd_pose.qRotation.y = hmd_q.y();
 			hmd_pose.qRotation.z = hmd_q.z();
 
-			Eigen::Vector3d e_left_add = Eigen::Vector3d(-0.2,-0.15,-0.54);
+			Eigen::Vector3d e_left_add = Eigen::Vector3d(-0.2, -0.15, -0.54);
 			Eigen::Vector3d e_right_add = Eigen::Vector3d(0.2, -0.15, -0.54);
-			
-			Eigen::Vector3d e_left_trans =hmd_q*e_left_add;
+
+			Eigen::Vector3d e_left_trans = hmd_q * e_left_add;
 			Eigen::Vector3d e_right_trans = hmd_q * e_right_add;
 			left_pose = hmd_pose;
 			right_pose = hmd_pose;
@@ -568,7 +597,7 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 			right_pose.vecPosition[1] = right_pose.vecPosition[1] + e_right_trans.y();
 			right_pose.vecPosition[2] = right_pose.vecPosition[2] + e_right_trans.z();
 
-			left_pose.qRotation.w= hmd_q.w();
+			left_pose.qRotation.w = hmd_q.w();
 			left_pose.qRotation.x = hmd_q.x();
 			left_pose.qRotation.y = hmd_q.y();
 			left_pose.qRotation.z = hmd_q.z();
@@ -580,26 +609,21 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 
 		}
 
-		if (g_test_sensor_mode ==3||g_test_sensor_mode==5)
-		{
-			
-			left_pose = hmd_pose;
-			left_pose.vecPosition[2] = left_pose.vecPosition[2] - 0.6;
-			left_pose.vecPosition[1] = left_pose.vecPosition[1] - 0.15;
-			left_pose.vecPosition[0] = left_pose.vecPosition[0] - 0.2;
-			right_pose= hmd_pose;
-			right_pose.vecPosition[2] = right_pose.vecPosition[2] - 0.6;
-			right_pose.vecPosition[1] = right_pose.vecPosition[1] - 0.15;
-			right_pose.vecPosition[0] = right_pose.vecPosition[0] + 0.2;
-
+		else{
 			hmd_pose.vecPosition[0] = hmd_pose.vecPosition[0] + hmd_add_x;
-			if (fabs(hmd_pose.vecPosition[0] - base_pose.vecPosition[0]) > 0.4f)
-			{
-				hmd_add_x = -hmd_add_x;
-			}
 
+			hmd_pose.vecVelocity[0] = hmd_add_v;
+			
+			left_pose.vecPosition[2] = left_pose.vecPosition[2] ;
+			left_pose.vecPosition[1] = left_pose.vecPosition[1]  ;
+			left_pose.vecPosition[0] = left_pose.vecPosition[0]  + left_add_x;
+		 
+			right_pose.vecPosition[2] = right_pose.vecPosition[2] ;
+			right_pose.vecPosition[1] = right_pose.vecPosition[1];
+			right_pose.vecPosition[0] = right_pose.vecPosition[0] + left_add_x;
+			 
 		}
-		if (g_test_sensor_mode>0)
+		if (g_test_sensor_mode>=0)
 		{
 			if (GetAsyncKeyState('B') != 0)
 			{
@@ -618,26 +642,10 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 				right_pose.willDriftInYaw = false;
 				right_pose.poseTimeOffset = 0.009;
 			}
-			if (g_test_sensor_mode==6)
+		
+			if (g_svrDriver.GetStreamingHmdDriver()->GetIsAdded_() == true)
 			{
-				for (int i=0;i<3;i++)
-				{
-					hmd_pose.vecVelocity[0] = 0;
-					left_pose.vecVelocity[0] = 0;
-					right_pose.vecVelocity[0] = 0;
-				}
-			}
-			hmd_pose.vecVelocity[0] = hmd_add_v;
-			if (g_svrDriver.GetHmdActiveType_()==(int) Hmd_Active_Type::Streaming)
-			{
-				if (g_test_sensor_mode == 4||g_test_sensor_mode == 5)
-				{
-					RVR::RVRPoseHmdData hmd = { 0 };
-					ExtractRVRPoseHmdData(&hmd_pose, &hmd);
-					SensorPasser::GetInstance()->SetHmdSensor(hmd);
-				}
-				else if (g_test_sensor_mode == 9&& add_index % 2 == 0)
-				{
+			    
 					RVR::RVRPoseHmdData hmd = { 0 };
 					ExtractRVRPoseHmdData(&hmd_pose, &hmd);
 					RVR::RVRControllerData left = { 0 };
@@ -646,29 +654,29 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 					RVR::RVRControllerData right = { 0 };
 					ExtractRVRControllerPoseData(&right_pose, &right);
 					
-					
+					hmd.poseTimeStamp = hmd.hmdTimeStamp = add_index;
 					SensorPasser::GetInstance()->SetAllSensor(hmd, left, right);
 					int64_t nts = RVR::nowInNs();
 					char msg[2048] = { 0 };
 					sprintf_s(msg, "SetAllSensor rotation %lf,%lf,%lf,%lf,  pose %lf,%lf,%lf vx=%f ts=%lld\n",
 						hmd.rotation.w, hmd.rotation.x, hmd.rotation.y, hmd.rotation.z,
 						hmd.position.x, hmd.position.y, hmd.position.z,hmd.linearVelocity.x,(nts-last_add)/1000000);
-				     
+				  
 					RVR_LOG_A(msg);
 					last_add = nts;
-				}
-				else
-				{
-					int64_t nts = RVR::nowInNs();
-				   vr:VRServerDriverHost()->TrackedDevicePoseUpdated(g_svrDriver.GetStreamingHmdDriver()->GetVrDeviceId(), hmd_pose, sizeof(DriverPose_t));
-					char msg[2048] = { 0 };
-					sprintf_s(msg, "add rotation %lf,%lf,%lf,%lf,  pose %lf,%lf,%lf  vx=%f ts=%lld\n",
-						hmd_pose.qRotation.w, hmd_pose.qRotation.x, hmd_pose.qRotation.y, hmd_pose.qRotation.z,
-						hmd_pose.vecPosition[0], hmd_pose.vecPosition[1], hmd_pose.vecPosition[2],hmd_pose.vecVelocity[0], (nts - last_add) / 1000000);
+				//}
+				//else
+				//{
+				//	int64_t nts = RVR::nowInNs();
+				//   vr:VRServerDriverHost()->TrackedDevicePoseUpdated(g_svrDriver.GetStreamingHmdDriver()->GetVrDeviceId(), hmd_pose, sizeof(DriverPose_t));
+				//	char msg[2048] = { 0 };
+				//	sprintf_s(msg, "add rotation %lf,%lf,%lf,%lf,  pose %lf,%lf,%lf  vx=%f ts=%lld\n",
+				//		hmd_pose.qRotation.w, hmd_pose.qRotation.x, hmd_pose.qRotation.y, hmd_pose.qRotation.z,
+				//		hmd_pose.vecPosition[0], hmd_pose.vecPosition[1], hmd_pose.vecPosition[2],hmd_pose.vecVelocity[0], (nts - last_add) / 1000000);
 
-					//RVR_LOG_A(msg);
-					last_add = nts;
-				}
+				//	//RVR_LOG_A(msg);
+				//	last_add = nts;
+				//}
 			}
 			else
 			{
@@ -687,16 +695,7 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 		}
 		if (g_svrDriver.GetController((int)ControllerIndex::kLeftController)->GetIsActived_())
 		{
-			if (g_test_sensor_mode==4 || g_test_sensor_mode == 5)
-			{
-				RVR::RVRControllerData data;
-				ExtractRVRControllerPoseData(&left_pose, &data);
-				SensorPasser::GetInstance()->SetControllerSensor(data, ControllerIndex::kLeftController);
-			} 
-			else
-			{
-				vr::VRServerDriverHost()->TrackedDevicePoseUpdated(g_svrDriver.GetController((int)ControllerIndex::kLeftController)->GetDriverObjId(), left_pose, sizeof(DriverPose_t));
-			}
+			
 		
 		}
 		else
@@ -710,16 +709,7 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 		}
 		if (g_svrDriver.GetController((int)ControllerIndex::kRightController)->GetIsActived_())
 		{
-			if (g_test_sensor_mode == 4 || g_test_sensor_mode == 5)
-			{
-				RVR::RVRControllerData data;
-				ExtractRVRControllerPoseData(&right_pose, &data);
-				SensorPasser::GetInstance()->SetControllerSensor(data, ControllerIndex::kRightController);
-			}
-			else
-			{
-				vr::VRServerDriverHost()->TrackedDevicePoseUpdated(g_svrDriver.GetController((int)ControllerIndex::kRightController)->GetDriverObjId(), right_pose, sizeof(DriverPose_t));
-			}
+			
 		}
 		else
 		{
@@ -732,7 +722,7 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 		}
 
 		Sleep(sleep_time);
-
+		add_index++;
 		if (g_test_sensor_mode==7)
 		{
 			continue;
@@ -741,29 +731,24 @@ unsigned int __stdcall PicoVRDriver::TestSensorThread(LPVOID lpParameter)
 		{
 			SensorPasser::GetInstance()->SetNewSensorNotifyEvent();
 		}
-		left_pose.vecPosition[0] = left_pose.vecPosition[0] + left_add_x;
-		if (fabs(left_pose.vecPosition[0]- base_pose.vecPosition[0])>0.4f)
-		{
-			left_add_x = -left_add_x;
-		}
-
-
-		right_pose.vecPosition[0] = right_pose.vecPosition[0] + right_add_x;
-		if (fabs(right_pose.vecPosition[0] - base_pose.vecPosition[0]) > 0.4f)
-		{
-			right_add_x = -right_add_x;
-		}
-
-		if (g_test_sensor_mode==9)
-		{
-			hmd_pose.vecPosition[0] = hmd_pose.vecPosition[0] + hmd_add_x;
-			if (fabs(hmd_pose.vecPosition[0] - base_pose.vecPosition[0]) > 4.0f)
+	    if (g_test_sensor_mode==0)
+	    {
+			if (fabs(left_pose.vecPosition[0] - base_pose.vecPosition[0]) > 0.4f)
 			{
-				hmd_add_x = -hmd_add_x;
-				hmd_add_v = -hmd_add_v;
+				direction_flag = -direction_flag;
 			}
-			add_index++;
+
+	    }
+		
+
+		
+			
+		if (fabs(hmd_pose.vecPosition[0] - base_pose.vecPosition[0]) > 0.4f)
+		{	
+			direction_flag = -direction_flag;
 		}
+			
+		
 	}
 	return 1;
 }

@@ -7,6 +7,7 @@
 #include "../D3DHelper.h"
 #include "../pxrTool/TimeTool.h"
 #include "../../RtpQualityHelper.h"
+#include "../RateDetecter.h"
 const wchar_t* VideoEncoderVCE::FRAME_INDEX = L"FrameIndex";
 const wchar_t* VideoEncoderVCE::START_TIME_PROPERTY = L"StartTimeProperty";
 const wchar_t* VideoEncoderVCE::VIDEO_FRAME_CONFIG_POINTER_PROPERTY = L"VideoFrameConfigPointerProperty";
@@ -23,6 +24,7 @@ extern SendIndex gSendIndex;
 extern RVR::RVRPoseHmdData gRenderPoseList[POSELISTSIZE];
 extern uint64_t gRenderPoseIndex;
 extern bool gLog;
+extern int gRtpPloadTpye;
 //
 // VideoEncoderVCE
 //
@@ -294,12 +296,7 @@ void VideoEncoderVCE::Transmit(ID3D11Texture2D* pTexture, VideoEncoderFrameConfi
 		}
 		string msg = "insert idr";
 		GLOBAL_DLL_CONTEXT_LOG()->LogWarning(msg);
-		/*if (gInsertIdr<=0)
-		{
-			gInsertIdr = 2;
-		}
-		
-		gInsertIdr=gInsertIdr-1;*/
+	
 	}
 	if (frameConfig->flags & RVR::VENC_GOP_UPDATE||gChangeGop)
 	{
@@ -351,7 +348,10 @@ void VideoEncoderVCE::Transmit(ID3D11Texture2D* pTexture, VideoEncoderFrameConfi
 		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
 	}
 }
- 
+void VideoEncoderVCE::SetBitRate(VideoEncoderFrameConfig* frameConfig)
+{
+
+}
 void VideoEncoderVCE::Receive(amf::AMFData* data)
 {
 	amf_uint64 frameConfPtr = 0;
@@ -418,15 +418,33 @@ void VideoEncoderVCE::Receive(amf::AMFData* data)
 		encode_info.autoRateFlag = gConfig.GetAutoRateValue();
 		int bit_rate = 0;
 		int max_rate = 0;
-		RtpQualityHelper::GetInstance()->GetCurrentRate(bit_rate, max_rate);
+		//RtpQualityHelper::GetInstance()->GetCurrentRate(bit_rate, max_rate);
+		int auto_rate = gConfig.GetAutoRateValue();
+		if (auto_rate == 1)
+		{
+			bit_rate = RateDetecter::GetInstance()->GetCurrentAverageRate();
+		}
+		else
+		{
+			bit_rate = gConfig.GetAverageBitRateValue();
+		}
 		encode_info.bitRate = bit_rate;
 		encode_info.encodEnd = nowInNs() ;
-		encode_info.index = index;
+		if (gConfig.BigPicture() == 1)
+		{
+			encode_info.index = index;
+		}
+		else
+		{
+			encode_info.index = out_inedx_;
+		}
+		encode_info.PloadTpye = gRtpPloadTpye;
 		gPushEncodedFrameFun((char*)p, length, mIndex,encode_info);
 	}
 	memmove(mOutFrame[out_frame_index_ % OUTBUFSIZE].buf, p, length);
 	mOutFrame[out_frame_index_ % OUTBUFSIZE].len = length;
 	mOutFrame[out_frame_index_ % OUTBUFSIZE].index = index;
+	out_inedx_ ++;
 	if (gConfig.GetOutFile() == 1 || gSaveVideo)
 	{
 		if (gConfig.GetIfHEVC() == 1)
@@ -524,7 +542,12 @@ void VideoEncoderVCE::Receive(amf::AMFData* data)
 			mNoIDRTime++;
 		}
 	}
-	out_frame_index_++;
+	{
+		std::unique_lock<std::mutex> lock(frame_index_mutex_);
+		last_produce_time_ns_ = nowInNs();
+		out_frame_index_++;
+		frame_index_cv_.notify_one();
+	}
 	//PostThreadMessage(rtp_thread_id_, MSG_PACKET_AND_SEND, (WPARAM) & (mOutFrame[out_frame_index_ % OUTBUFSIZE].index), (LPARAM) & (mIndex));
 
 

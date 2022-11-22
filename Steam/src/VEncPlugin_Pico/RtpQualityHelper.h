@@ -42,10 +42,10 @@ public:
 	int Init() ;
 	int SetSocketParam(SOCKET leftSocket, SOCKET rightSocket, std::string dstIp, u_short leftPort, u_short rightPort);
 	int SetBitRate(int averageRate,int maxRate);
-	bool ChangeEncodeBitRate(int index,int &averageRate,int &maxRate, bool& itype);
+	//bool ChangeEncodeBitRate(int index,int &averageRate,int &maxRate, bool& itype);
 	void GetCurrentRate(int& averageRate, int& maxRate);
-	void IncreaseBitRate();
-	void DecreaseBitRate(float div=2.0f,int flag=0);
+	//void IncreaseBitRate();
+	//void DecreaseBitRate(float div=2.0f,int flag=0);
 	void ForceMaxBitRate(int averageRate, int maxRate);
 	uint64_t mDecreaseTimeTrace=0;
 	uint64_t mDecreaseSecondTimeTrace = 0;

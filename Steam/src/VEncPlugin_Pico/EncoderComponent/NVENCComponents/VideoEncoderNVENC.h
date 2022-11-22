@@ -20,6 +20,7 @@ public:
 	uint64_t mEndTime;
 	uint64_t mStartTime;
 	void Transmit(ID3D11Texture2D *pTexture, VideoEncoderFrameConfig* frameConfig);
+	void SetBitRate(VideoEncoderFrameConfig* frameConfig);
 	int  mEncoderFlag;
 	void Flush();
 
@@ -62,6 +63,6 @@ private:
 	ID3D11Texture2D* CreateSharedTexture2D(ID3D11Device* device, DXGI_FORMAT format, int width, int height, int nSampleCount);
 	HANDLE CreateSharedResource(ID3D11Texture2D* texture);
 
-
+	_NV_ENC_PARAMS_RC_MODE GetRateControlMode(int rvr_config);
 };
 

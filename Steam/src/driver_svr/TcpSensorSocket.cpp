@@ -10,9 +10,11 @@ extern ConfigReader gConfigReader;
 extern PicoVRDriver g_svrDriver;
 extern std::string 	gDstip;
 extern bool  setip;
+extern int g_test_sensor_mode;
+extern bool g_test_sensor;
 TcpSensorSocket* TcpSensorSocket::gTcpSensorInstance = nullptr;
 
-TcpSensorSocket::GC TcpSensorSocket::TcpSensoorGc;
+TcpSensorSocket::GC TcpSensorSocket::tcp_sensor_gc_;
 
 TcpSensorSocket* TcpSensorSocket::GetInstance()
 {
@@ -110,7 +112,16 @@ int TcpSensorSocket::GetSensorFromSocket(char* buf, int len)
 	SetControllerPose(buf + offset, left_pose_, 0);
 	offset += sizeof(WireLessType::TransControllerData);
 	SetControllerPose(buf + offset, right_pose_, 1);
-	
+	offset += sizeof(WireLessType::TransControllerData);
+	if (offset+sizeof(WireLessType::AddachedMsg)==len)
+	{
+		WireLessType::AddachedMsg add_msg = {0};
+		memmove(&add_msg, buf + offset, sizeof(WireLessType::AddachedMsg));
+		hmd_pose_.net_cost = add_msg.net_cost;
+		hmd_pose_.hmd_index = add_msg.hmd_index;
+	}
+
+
 	SensorPasser::GetInstance()->SetAllSensor(hmd_pose_, left_pose_, right_pose_);
 	if (g_svrDriver.GetStreamingHmdDriver()->GetIsAdded_() == false)
 	{
@@ -120,12 +131,12 @@ int TcpSensorSocket::GetSensorFromSocket(char* buf, int len)
 		g_svrDriver.AddHmdPose(&TcpSensorSocket::GetInstance()->hmd_pose_, false);
 	}
 
-	/*RVR_LOG_A("sensertest:%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%lld",
-		hmd_pose_.rotation.w, hmd_pose_.rotation.x, hmd_pose_.rotation.y, hmd_pose_.rotation.z, hmd_pose_.position.x, hmd_pose_.position.y, hmd_pose_.position.z,
-		left_pose_.rotation.w, left_pose_.rotation.x, left_pose_.rotation.y, left_pose_.rotation.z, left_pose_.position.x, left_pose_.position.y, left_pose_.position.z,
-		right_pose_.rotation.w, right_pose_.rotation.x, right_pose_.rotation.y, right_pose_.rotation.z, right_pose_.position.x, right_pose_.position.y, right_pose_.position.z,
-		hmd_pose_.poseTimeStamp);
-*/
+	//RVR_LOG_A("sensertest:%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%lld",
+	//	hmd_pose_.rotation.w, hmd_pose_.rotation.x, hmd_pose_.rotation.y, hmd_pose_.rotation.z, hmd_pose_.position.x, hmd_pose_.position.y, hmd_pose_.position.z,
+	//	left_pose_.rotation.w, left_pose_.rotation.x, left_pose_.rotation.y, left_pose_.rotation.z, left_pose_.position.x, left_pose_.position.y, left_pose_.position.z,
+	//	right_pose_.rotation.w, right_pose_.rotation.x, right_pose_.rotation.y, right_pose_.rotation.z, right_pose_.position.x, right_pose_.position.y, right_pose_.position.z,
+	//	hmd_pose_.poseTimeStamp);
+
 
 	// present 中都不sleep
 	/// 不用队列。每次都刷新 sensor 。直接放给present 调度  
@@ -162,7 +173,7 @@ unsigned int TcpSensorSocket::CheckSensorThread(LPVOID lpParameter)
 			memmove(&controller_pose[1], &TcpSensorSocket::GetInstance()->right_pose_, sizeof(RVR::RVRPoseHmdData));
 			controller_pose[1].connectionState = RVR::RVRControllerConnectionState::kDisconnected;
 
-			if (gConfigReader.GetRtcOrBulkMode_() == 0)
+			if ((gConfigReader.GetRtcOrBulkMode_() == 0 )&& (g_test_sensor==false))
 			{
 				g_svrDriver.AddHmdPose(&hmd_pose);
 				g_svrDriver.AddControllerPose(0, &controller_pose[0]);
@@ -202,6 +213,10 @@ unsigned int  TcpSensorSocket::WorkThread(LPVOID lpParameter)
 		DriverLog("get hmd tcpsensor connected");
 		int64_t socket_ts = 0;
 		int loopfirst = 0;
+		bool need_test_msglen = true;
+		char recv_buf[1024] = {0};
+		int sensor_buf_len = 0;
+		int sensor_data_len = 0;
 		while (TcpSensorSocket::GetInstance()->GetLoop())
 		{
 			if (loopfirst==0)
@@ -210,10 +225,42 @@ unsigned int  TcpSensorSocket::WorkThread(LPVOID lpParameter)
 				send(TcpSensorSocket::GetInstance()->hmd_socket_,msg,256,0);
 				loopfirst++;
 			}
-			
-			char recv_buf[SensorTcpBufLen];
-		 
-			int recv_len=recv(TcpSensorSocket::GetInstance()->hmd_socket_, recv_buf, SensorTcpBufLen, 0);
+				
+			int recv_len = 0;
+		    if (need_test_msglen)
+		    {
+				recv_len = recv(TcpSensorSocket::GetInstance()->hmd_socket_, recv_buf, 5, 0);
+				if (recv_len <= 0)
+				{
+					TcpSensorSocket::GetInstance()->CloseHmdSocket();
+					break;
+				}
+				else
+				{
+					int data_len = 0;
+					memmove(&data_len, recv_buf+1, sizeof(int));
+					if (data_len==TcpSensorDataLen)
+					{
+						 sensor_buf_len = TcpSensorBufLen;
+						 sensor_data_len = TcpSensorDataLen;
+					}
+					else if (data_len==TcpSensorWithAddDataLen)
+					{
+						sensor_buf_len = TcpSensorWithAddBufLen;
+						sensor_data_len = TcpSensorWithAddDataLen;
+					}
+					else 
+					{
+						RVR_LOG_A("msg sensor length error,length= %d", data_len);
+						TcpSensorSocket::GetInstance()->CloseHmdSocket();
+						break;
+					}
+				}
+				need_test_msglen = false;
+				memmove(TcpSensorSocket::GetInstance()->recv_buf_ + TcpSensorSocket::GetInstance()->recv_len_, recv_buf, recv_len);
+				TcpSensorSocket::GetInstance()->recv_len_ = TcpSensorSocket::GetInstance()->recv_len_ + recv_len;							
+		    }
+			recv_len =recv(TcpSensorSocket::GetInstance()->hmd_socket_, recv_buf, sensor_buf_len, 0);
 			if (recv_len<=0)
 			{
 				TcpSensorSocket::GetInstance()->CloseHmdSocket();
@@ -223,36 +270,31 @@ unsigned int  TcpSensorSocket::WorkThread(LPVOID lpParameter)
 			memmove(TcpSensorSocket::GetInstance()->recv_buf_ + TcpSensorSocket::GetInstance()->recv_len_, recv_buf, recv_len);
 			TcpSensorSocket::GetInstance()->recv_len_ = TcpSensorSocket::GetInstance()->recv_len_ + recv_len;
 
-			while (TcpSensorSocket::GetInstance()->recv_len_ >=SensorTcpBufLen)
+			while (TcpSensorSocket::GetInstance()->recv_len_ >= sensor_buf_len)
 			{
 				char msg_type = TcpSensorSocket::GetInstance()->recv_buf_[0];
 				if (msg_type==0x11)
 				{
-					int msg_len = 0;
-					memmove(&msg_len, TcpSensorSocket::GetInstance()->recv_buf_ + 1, sizeof(int));
-					if (msg_len== TCPSENSORMSGLEN)
+					int data_len = 0;
+					memmove(&data_len, TcpSensorSocket::GetInstance()->recv_buf_ + 1, sizeof(int));
+					if (data_len == sensor_data_len)
 					{
 						int64_t ts = RVR::nowInNs();
 					//	RVR_LOG_A("socket subts=%lld", (ts - socket_ts) / 1000);
 						socket_ts = ts;
-						if ((TcpSensorSocket::GetInstance()->recv_len_ - SensorTcpBufLen)<  SensorTcpBufLen)
-						{
-							TcpSensorSocket::GetInstance()->GetSensorFromSocket(TcpSensorSocket::GetInstance()->recv_buf_ + 5, TCPSENSORMSGLEN);
-						}
-						else
-						{
-							//RVR_LOG_A("not add  subts=%lld", (ts - socket_ts) / 1000);
-						}
-						TcpSensorSocket::GetInstance()->recv_len_ -= SensorTcpBufLen;
+						
+						TcpSensorSocket::GetInstance()->GetSensorFromSocket(TcpSensorSocket::GetInstance()->recv_buf_ + 5, sensor_data_len);
+						
+						TcpSensorSocket::GetInstance()->recv_len_ -= sensor_buf_len;
 						if (TcpSensorSocket::GetInstance()->recv_len_>0)
 						{
-							memmove(TcpSensorSocket::GetInstance()->recv_buf_, TcpSensorSocket::GetInstance()->recv_buf_ + SensorTcpBufLen, TcpSensorSocket::GetInstance()->recv_len_);
+							memmove(TcpSensorSocket::GetInstance()->recv_buf_, TcpSensorSocket::GetInstance()->recv_buf_ + sensor_buf_len, TcpSensorSocket::GetInstance()->recv_len_);
 						}
 					
 					}
 					else
 					{
-						RVR_LOG_A("msg sensor length error,length= %d",msg_len);
+						RVR_LOG_A("msg sensor length error,length= %d", data_len);
 						TcpSensorSocket::GetInstance()->CloseHmdSocket();
 					}
 				}

@@ -218,7 +218,7 @@ public:
     *  @brief  NvEncoder class virtual destructor.
     */
     virtual ~NvEncoder();
-
+    int64_t out_inedx_ = 0;
 public:
     /**
     *  @brief This a static function to get chroma offsets for YUV planar formats.

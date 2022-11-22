@@ -6,13 +6,13 @@
 using namespace std;
  
 
-int  ComputeEncoderWidth(int& origin_width, int press, int& render_width, int& cut_x)
+int  ComputeEncoderWidth(int& origin_width, int press, int& encode_width, int& cut_x)
 {
 	if (origin_width < 512)
 	{
-		render_width = 512;
+		encode_width = 512;
 		cut_x = 0;
-		return render_width;
+		return encode_width;
 
 	}
 	cut_x = origin_width / 3-64;
@@ -23,8 +23,8 @@ int  ComputeEncoderWidth(int& origin_width, int press, int& render_width, int& c
 		{
 			continue;
 		}
-		render_width = origin_width - i * 2 + i / press * 2;
-		if (render_width % 32 == 0)
+		encode_width = origin_width - i * 2 + i / press * 2;
+		if (encode_width % 32 == 0)
 		{
 			break;
 		}
@@ -43,33 +43,33 @@ int  ComputeEncoderWidth(int& origin_width, int press, int& render_width, int& c
 			{
 				continue;
 			}
-			render_width = origin_width - i * 2 + i / press * 2;
-			if (render_width % 32 == 0)
+			encode_width = origin_width - i * 2 + i / press * 2;
+			if (encode_width % 32 == 0)
 			{
 				break;
 			}
 		}
 		if (i == up_width)
 		{
-			render_width = -1;
+			encode_width = -1;
 		}
 	}
-	if (render_width < 0)
+	if (encode_width < 0)
 	{
 		origin_width--;
-		render_width = ComputeEncoderWidth(origin_width, press, render_width, cut_x);
+		encode_width = ComputeEncoderWidth(origin_width, press, encode_width, cut_x);
 	}
-	return render_width;
+	return encode_width;
 }
 
 
-int ComputeEncoderHeight(int& origin_height, int press, int& render_height, int& cut_y)
+int ComputeEncoderHeight(int& origin_height, int press, int& encode_height, int& cut_y)
 {
 	if (origin_height < 512)
 	{
-		render_height = 512;
+		encode_height = 512;
 		cut_y = 0;
-		return render_height;
+		return encode_height;
 
 	}
 	cut_y = origin_height / 3-64;
@@ -80,8 +80,8 @@ int ComputeEncoderHeight(int& origin_height, int press, int& render_height, int&
 		{
 			continue;
 		}
-		render_height = origin_height - i * 2 + i / press * 2;
-		if (render_height % 32 == 0)
+		encode_height = origin_height - i * 2 + i / press * 2;
+		if (encode_height % 32 == 0)
 		{
 			break;
 		}
@@ -100,23 +100,23 @@ int ComputeEncoderHeight(int& origin_height, int press, int& render_height, int&
 			{
 				continue;
 			}
-			render_height = origin_height - i * 2 + i / press * 2;
-			if (render_height % 32 == 0)
+			encode_height = origin_height - i * 2 + i / press * 2;
+			if (encode_height % 32 == 0)
 			{
 				break;
 			}
 		}
 		if (i == up_width)
 		{
-			render_height = -1;
+			encode_height = -1;
 		}
 	}
-	if (render_height < 0)
+	if (encode_height < 0)
 	{
 		origin_height--;
-		render_height = ComputeEncoderHeight(origin_height, press, render_height, cut_y);
+		encode_height = ComputeEncoderHeight(origin_height, press, encode_height, cut_y);
 	}
-	return render_height;
+	return encode_height;
 }
 
 
@@ -199,14 +199,33 @@ void ConfigReader::ReadConfig(string configPath)
 	mHeight = GetPrivateProfileInt(L"session", L"eyeHeight", 1920, wdriverPath.c_str());
 	split_= GetPrivateProfileInt(L"PICO", L"split", 0, wdriverPath.c_str());
 	mComPress = 2;
+	if ((mWidth!=mHeight)||(mWidth<1024)||(mHeight>3200))
+	{
+		int pixel = mWidth > mHeight ? mWidth : mHeight;
+		if (pixel<1024)
+		{
+			pixel = 1024;
+		}
+		if (pixel>3200)
+		{
+			pixel = 3200;
+		}
+		mWidth = mHeight = pixel;
+	}
+	mWidth = (mWidth / 8) * 8;
+	mHeight = (mHeight / 8) * 8;
 	if (mHeight==1920)
 	{
 		mCutx = mCuty = 448;
 	}else if (mHeight==2560)
 	{
 		//mCutx = mCuty = 640;
-		mCutx = mCuty = 624;
-		mComPress = 3;
+		//mCutx = mCuty = 624;
+		//mComPress = 3;
+		mCutx = mCuty = 768;
+		mComPress =2;
+		//768 768
+		//	2
 	}
 	else if (mHeight == 2160)
 	{
@@ -221,7 +240,7 @@ void ConfigReader::ReadConfig(string configPath)
 		mCutx = mCuty = 384;
 	}
 	 
-	mLinearResolation = GetPrivateProfileInt(L"PICTURE", L"linearresolution", 0, wdriverPath.c_str());
+	mLinearResolation = GetPrivateProfileInt(L"PICTURE", L"linearresolution", 1, wdriverPath.c_str());
 	AADT_Func = GetPrivateProfileInt(L"Function", L"AADT_Func",0, wdriverPath.c_str());
 	if (mLinearResolation==1)
 	{
@@ -246,7 +265,14 @@ void ConfigReader::ReadConfig(string configPath)
 			mEncoderWidth = GetEveWidth() - (GetCutx() - GetCutx() / GetComPress()) * 2;
 			mEncoderHeight = GetEveHeight() - (GetCuty() - GetCuty() / GetComPress()) * 2;
 		}
-
+		else if (mHeight == 2560)
+		{
+			//mCutx = mCuty = 640;
+			mCutx = mCuty = 768;
+			mComPress = 2;
+			mEncoderWidth = GetEveWidth() - (GetCutx() - GetCutx() / GetComPress()) * 2;
+			mEncoderHeight = GetEveHeight() - (GetCuty() - GetCuty() / GetComPress()) * 2;
+		}
 		if (mBigPicture == 1)
 		{
 			mEncoderWidth = mEncoderWidth * 2;
@@ -255,6 +281,11 @@ void ConfigReader::ReadConfig(string configPath)
 	}
 	else
 	{
+		if ((mWidth !=1664)||(mWidth != 1920)||(mWidth != 2160)|| (mWidth != 2560))
+		{
+			mWidth = mHeight = 2160;
+		}
+		 
 		if (mBigPicture==1)
 		{
 			mEncoderWidth  =  GetEveWidth() - (GetCutx() -GetCutx() / GetComPress()) * 2;
@@ -308,14 +339,20 @@ void ConfigReader::ReadConfig(string configPath)
 	rtc_mode_ = GetPrivateProfileInt(L"Function", L"rtcmode", 0, wdriverPath.c_str());
 	mHmdType = WString2String(configMsg);
 	max_sensor_store_ = GetPrivateProfileInt(L"PICO", L"MaxSensorStore", 3, wdriverPath.c_str());
+
+	mic_work_ = GetPrivateProfileInt(L"PICO", L"MicWork", 0, wdriverPath.c_str());
+	 
+	mic_volume_ = GetPrivateProfileInt(L"PICO", L"MicVolume", 0, wdriverPath.c_str());
+
 	if (mHmdType.compare("neo3") == 0)
 	{
 		fov = 95.0f;
 	}
 	else if (mHmdType.compare("phoenix") == 0)
 	{
-		fov = 104.f;
+		fov = 105.f;
 	}
+	 
 	mBigPicture = 1;
 	mTcp = 1;
 }
@@ -356,6 +393,12 @@ int ConfigReader::GetMicWork_()
 	mic_work_ = GetPrivateProfileInt(L"PICO", L"MicWork", 0, wdriverPath.c_str());
 	return mic_work_;
 }
+
+int ConfigReader::GetMicVolume_()
+{
+	mic_volume_ = GetPrivateProfileInt(L"PICO", L"MicVolume", 50, wdriverPath.c_str());
+	return mic_volume_;
+}
 int ConfigReader::GetRtcOrBulkModeFromFile_() 
 {
 	rtc_mode_ = GetPrivateProfileInt(L"Function", L"rtcmode", 0, wdriverPath.c_str());
@@ -382,10 +425,18 @@ float ConfigReader::GetSaturation()
 float ConfigReader::GetSharper()
 {
 	wchar_t configMsg[256] = { 0 };
-	GetPrivateProfileString(L"PICTURE", L"sharper", L"1.0", configMsg, 256, wdriverPath.c_str());
+	GetPrivateProfileString(L"PICTURE", L"sharper", L"0.0", configMsg, 256, wdriverPath.c_str());
 	string datastr = WString2String(configMsg);
 	shaper = atof(datastr.c_str());
 	return 	shaper;
+}
+float ConfigReader::GetSharperWeight()
+{
+	wchar_t configMsg[256] = { 0 };
+	GetPrivateProfileString(L"PICTURE", L"sharperweight", L"0.2", configMsg, 256, wdriverPath.c_str());
+	string datastr = WString2String(configMsg);
+	shaper_weight = atof(datastr.c_str());
+	return 	shaper_weight;
 }
 float ConfigReader::GetContrast()
 {

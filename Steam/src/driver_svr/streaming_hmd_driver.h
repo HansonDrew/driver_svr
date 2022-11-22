@@ -67,6 +67,9 @@ public: //IVRDriverDirectModeComponent
     virtual void GetNextSwapTextureSetIndex(vr::SharedTextureHandle_t sharedTextureHandles[2], uint32_t(*pIndices)[2]) override;
 	virtual void GetFrameTiming(vr::DriverDirectMode_FrameTiming* pFrameTiming)  override;
 public:
+	RVR::RVRPoseHmdData hmd_data;
+	RVR::RVRControllerData left_data;
+	RVR::RVRControllerData right_data;
 	int64_t last_create_texture_ts = 0;
 	void StartEncoder();
 	int  GetEncodeFrameConfig(int64_t CopyStart);
@@ -111,22 +114,26 @@ public:
 	void ExtractDriverPose(RVR::RVRPoseHmdData* data);
 
 	void ReSetPose();
-	int GetFrameIndex_() { return frame_index_; };
-	RVR::RVRPoseHmdData GetCurrentPose();
-	void SetCurrentPose(RVR::RVRPoseHmdData hmd_pose);
 	vr::TrackedDeviceIndex_t GetVrDeviceId() { return vr_device_index_; };
-	RVR::RVRPoseHmdData GetLastRenderPose()
-	{
-		return last_render_pose;
-	};
-	void SetLastRenderPose(RVR::RVRPoseHmdData hmd_pose);
+	int GetFrameIndex_() { return frame_index_; };
 	
+	RVR::RVRPoseHmdData GetOutputRenderPose();
+	void SetOutputRenderPose(RVR::RVRPoseHmdData hmd_pose);
+	void SetOutputRenderPoseFromMatrix34(RVR::RVRPoseHmdData* poseData, const vr::HmdMatrix34_t* pPose);
+
+
+	RVR::RVRPoseHmdData GetInputRenderPose()
+	{
+		return input_render_pose_;
+	};
+	void SetInputRenderPose(RVR::RVRPoseHmdData hmd_pose);
+	uint64_t last_encode_hmd_timestamps_=0;
 private:
-	RVR::RVRPoseHmdData last_render_pose;
+	RVR::RVRPoseHmdData input_render_pose_;
 	std::mutex current_pose_mutex_;
 	bool left_encoder_init_ = false;
 	bool right_encoder_init_ = false;
-    void ExtractRVRPoseHmdData(RVR::RVRPoseHmdData* poseData, const vr::HmdMatrix34_t *pPose);
+   // void ExtractRVRPoseHmdData(RVR::RVRPoseHmdData* poseData, const vr::HmdMatrix34_t *pPose);
     void CacheLatestPose(RVR::RVRPoseHmdData* poseData);
 	float ipd_;
 	int depth_inedx_=0;
@@ -158,7 +165,7 @@ private:
     RVRStub* mStubInstance;
 	std::mutex driver_pose_mutex_;
     vr::DriverPose_t driver_pose_;
-    RVR::RVRPoseHmdData mCurrentRenderPose;
+    RVR::RVRPoseHmdData out_render_pose_;
     Compositor compositor;
     ID3D11Texture2D* depthTexture[2];
 

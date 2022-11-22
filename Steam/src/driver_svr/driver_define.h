@@ -8,8 +8,12 @@
 
 #define DisplayEdid  0x3241
 #define TOGETHERSENSORBUFLEN 443///107+168*2 
-#define TCPSENSORMSGLEN 440
-#define SensorTcpBufLen 445
+
+
+#define TcpSensorDataLen 440
+#define TcpSensorBufLen 445   
+#define TcpSensorWithAddDataLen 456
+#define TcpSensorWithAddBufLen 461
 enum Eye {
 	kLeft = 0,
 	kRight = 1
@@ -245,6 +249,12 @@ namespace HidType
 
 namespace WireLessType 
 {
+	struct AddachedMsg
+	{
+		int net_cost;
+		int hmd_index;
+		int standby[2];
+	};
 	struct EncodeParam 
 	{
 		int render_width;

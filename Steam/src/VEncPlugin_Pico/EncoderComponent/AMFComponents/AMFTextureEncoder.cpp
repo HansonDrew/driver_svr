@@ -45,7 +45,7 @@ bool AMFTextureEncoder::Init(const amf::AMFContextPtr& amfContext, const VideoEn
 
 	//TODO: Modified by AMD recommend. Fix the Qualcomm config
 	amf_int32 idrPeriod = INT32_MAX;// config->CSDPeriod <= config->GOPSize ? config->CSDPeriod : config->GOPSize;
-	AMF_VIDEO_ENCODER_PROFILE_ENUM profile = AMF_VIDEO_ENCODER_PROFILE_MAIN;// GetAMFCodecProfileFromConfig(config);
+	AMF_VIDEO_ENCODER_PROFILE_ENUM profile = AMF_VIDEO_ENCODER_PROFILE_HIGH;// GetAMFCodecProfileFromConfig(config);
 	//
 
 	
@@ -77,18 +77,20 @@ bool AMFTextureEncoder::Init(const amf::AMFContextPtr& amfContext, const VideoEn
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_USAGE, AMF_VIDEO_ENCODER_USAGE_LOW_LATENCY);
 		
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_B_PIC_PATTERN, 0);
-		mEncoder->SetProperty(AMF_VIDEO_ENCODER_QUALITY_PRESET, AMF_VIDEO_ENCODER_QUALITY_PRESET_BALANCED);
+		mEncoder->SetProperty(AMF_VIDEO_ENCODER_QUALITY_PRESET, AMF_VIDEO_ENCODER_QUALITY_PRESET_SPEED);
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_LOWLATENCY_MODE, true);
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_TARGET_BITRATE, avgBitRateIn);
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_PEAK_BITRATE, maxBitRateIn);
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_FRAMESIZE, ::AMFConstructSize(mConfig.width, mConfig.height));
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_FRAMERATE, ::AMFConstructRate(frameRateIn, 1));
-		mEncoder->SetProperty(AMF_VIDEO_ENCODER_CABAC_ENABLE, AMF_VIDEO_ENCODER_CABAC);//AMF_VIDEO_ENCODER_CABAC节省比特率，算法复杂度高
+		//mEncoder->SetProperty(AMF_VIDEO_ENCODER_CABAC_ENABLE, AMF_VIDEO_ENCODER_CABAC);//AMF_VIDEO_ENCODER_CABAC节省比特率，算法复杂度高
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_PROFILE, profile);
 	    //mEncoder->SetProperty(AMF_VIDEO_ENCODER_PROFILE, AMF_VIDEO_ENCODER_PROFILE_MAIN);
-		mEncoder->SetProperty(AMF_VIDEO_ENCODER_PROFILE_LEVEL, AMF_LEVEL_6_2);
+	//	mEncoder->SetProperty(AMF_VIDEO_ENCODER_PROFILE_LEVEL, AMF_LEVEL_6_2);
 		//mEncoder->SetProperty(AMF_VIDEO_ENCODER_CABAC_ENABLE, coding);
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_IDR_PERIOD, 0);
+		AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_ENUM rate_control = GetAVCRateControlMode(gConfig.GetRateControllModel());
+		mEncoder->SetProperty(AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD, rate_control);
 		/*if (gConfig.GetTcpValue())
 		{
 			mEncoder->SetProperty(AMF_VIDEO_ENCODER_IDR_PERIOD, 0);
@@ -112,13 +114,13 @@ bool AMFTextureEncoder::Init(const amf::AMFContextPtr& amfContext, const VideoEn
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_USAGE, AMF_VIDEO_ENCODER_HEVC_USAGE_LOW_LATENCY);
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_FRAMESIZE, ::AMFConstructSize(mConfig.width, mConfig.height));
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_FRAMERATE, ::AMFConstructRate(frameRateIn, 1));
-		mEncoder->SetProperty(AMF_VIDEO_ENCODER_PROFILE_LEVEL, AMF_LEVEL_6_2);
-		mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_QUALITY_PRESET, AMF_VIDEO_ENCODER_HEVC_QUALITY_PRESET_BALANCED);
+		mEncoder->SetProperty(AMF_VIDEO_ENCODER_PROFILE_LEVEL, AMF_LEVEL_6);
+		mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_QUALITY_PRESET, AMF_VIDEO_ENCODER_HEVC_QUALITY_PRESET_SPEED);
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_SKIP_FRAME_ENABLE, false);	
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_TARGET_BITRATE, avgBitRateIn);		 
 		mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_PEAK_BITRATE, maxBitRateIn);
-		
-		 
+		AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_ENUM rate_control = GetHEVCRateControlMode(gConfig.GetRateControllModel());
+		mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD, rate_control);
 	///*mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD, AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_QUALITY_VBR);	
 	//	mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_MAX_QP_P, 50);
 	//	mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_MAX_QP_I, 50);
@@ -198,39 +200,7 @@ void AMFTextureEncoder::Submit(amf::AMFData* data, VideoEncoderFrameConfig* fram
 	int averBit;
 	int maxBit;
 	bool itype = false;
-	if (RtpQualityHelper::GetInstance()->ChangeEncodeBitRate(mIndex,averBit,maxBit,itype))
-	{
-		if (gConfig.GetIfHEVC() == 0) 
-		{
-			mEncoder->SetProperty(AMF_VIDEO_ENCODER_TARGET_BITRATE, averBit);
-			mEncoder->SetProperty(AMF_VIDEO_ENCODER_PEAK_BITRATE, maxBit);
-		}
-		else 
-		{
-			mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_TARGET_BITRATE, averBit);
-			mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_PEAK_BITRATE, maxBit);
-		}		
-	/*
-		string msg = "ChangeEncodeBitRate" + to_string(averBit) + "max" + to_string(maxBit);
-		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);*/
-	}
-
-	if ((frameConfig->flags & RVR::VENC_BITRATE_UPDATE_BY_USER)|| (frameConfig->flags & RVR::VENC_BITRATE_UPDATE_BY_CONFIG))
-	{
-		if (gConfig.GetIfHEVC() == 0)
-		{
-			mEncoder->SetProperty(AMF_VIDEO_ENCODER_TARGET_BITRATE, frameConfig->avgBitRate);
-			mEncoder->SetProperty(AMF_VIDEO_ENCODER_PEAK_BITRATE, frameConfig->maxBitRate);
-		}
-		else
-		{
-			mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_TARGET_BITRATE, frameConfig->avgBitRate);
-			mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_PEAK_BITRATE, frameConfig->maxBitRate);
-		}
-		
-			string msg = "ChangeEncodeBitRateByUser" + to_string(frameConfig->avgBitRate) + "max" + to_string(frameConfig->maxBitRate);
-			GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
-	}
+	SetBitRate(frameConfig);
 	/*if (itype)
 	{
 		if (gConfig.GetIfHEVC() == 0)
@@ -253,7 +223,26 @@ void AMFTextureEncoder::Submit(amf::AMFData* data, VideoEncoderFrameConfig* fram
 		GLOBAL_DLL_CONTEXT_LOG()->LogAlways("m_amfEncoder->SubmitInput returns error: " + std::to_string(res));
 	}
 }
+void AMFTextureEncoder::SetBitRate(VideoEncoderFrameConfig* frameConfig) 
+{
+	if ((frameConfig->flags & RVR::VENC_BITRATE_UPDATE_BY_USER) || (frameConfig->flags & RVR::VENC_BITRATE_UPDATE_BY_CONFIG)
+		|| (frameConfig->flags & RVR::VENC_BITRATE_UPDATE_BY_NET))
+	{
+		if (gConfig.GetIfHEVC() == 0)
+		{
+			mEncoder->SetProperty(AMF_VIDEO_ENCODER_TARGET_BITRATE, frameConfig->avgBitRate);
+			mEncoder->SetProperty(AMF_VIDEO_ENCODER_PEAK_BITRATE, frameConfig->maxBitRate);
+		}
+		else
+		{
+			mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_TARGET_BITRATE, frameConfig->avgBitRate);
+			mEncoder->SetProperty(AMF_VIDEO_ENCODER_HEVC_PEAK_BITRATE, frameConfig->maxBitRate);
+		}
 
+		string msg = "ChangeEncodeBitRateByUser or config flag"+to_string(frameConfig->flags)+"eye index"+to_string(mIndex) + "average" + to_string(frameConfig->avgBitRate) + "max" + to_string(frameConfig->maxBitRate);
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+	}
+}
 void AMFTextureEncoder::Flush()
 {
 	if (mEncoder != nullptr)
@@ -342,25 +331,88 @@ amf::AMF_SURFACE_FORMAT AMFTextureEncoder::GetAMFCodecFormatFromConfig(const Vid
 	format = amf::AMF_SURFACE_RGBA;
 	return format;
 }
-
-AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_ENUM AMFTextureEncoder::GetAMFCodecRateControlModeFromConfig(const VideoEncoderConfig* config)
+//
+//AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_ENUM AMFTextureEncoder::GetAMFCodecRateControlModeFromConfig(const VideoEncoderConfig* config)
+//{
+//	AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_ENUM rcMode = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_UNKNOWN;
+//	switch (config->rcMode) {
+//	case 0:
+//		rcMode = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_CBR;
+//		break;
+//	case 1:
+//		rcMode = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
+//		break;
+//	default:
+//		GLOBAL_DLL_CONTEXT_LOG()->LogAlways("RC mode acquired but AMF doesn't support.");
+//		rcMode = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_UNKNOWN;
+//	}
+//
+//	return rcMode;
+//}
+AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_ENUM AMFTextureEncoder::GetAVCRateControlMode(int rvr_config) 
 {
-	AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_ENUM rcMode = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_UNKNOWN;
-	switch (config->rcMode) {
+	AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_ENUM ret_val = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
+	switch (rvr_config)
+	{
 	case 0:
-		rcMode = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_CBR;
+		ret_val = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_CONSTANT_QP;
 		break;
 	case 1:
-		rcMode = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
+		ret_val = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
+		break;
+	case 2:
+		ret_val = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_CBR;
+		break;
+	case 4:
+		ret_val = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_LATENCY_CONSTRAINED_VBR;
+		break;
+	case 8:
+	case 16:
+		ret_val = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_CBR;
+		break;
+	case 32:
+		ret_val = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
 		break;
 	default:
-		GLOBAL_DLL_CONTEXT_LOG()->LogAlways("RC mode acquired but AMF doesn't support.");
-		rcMode = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_UNKNOWN;
+		ret_val = AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
+		break;
 	}
-
-	return rcMode;
+	std::string msg = "amd get avc ratecontrol tyep=" + std::to_string((int)(ret_val));
+	GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+	return ret_val;
 }
-
+AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_ENUM  AMFTextureEncoder::GetHEVCRateControlMode(int rvr_config) 
+{
+	AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_ENUM ret_val = AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
+	switch (rvr_config)
+	{
+	case 0:
+		ret_val = AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_CONSTANT_QP;
+		break;
+	case 1:
+		ret_val = AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
+		break;
+	case 2:
+		ret_val = AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_CBR;
+		break;
+	case 4:
+		ret_val = AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_LATENCY_CONSTRAINED_VBR;
+		break;
+	case 8:
+	case 16:
+		ret_val = AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_CBR;
+		break;
+	case 32:
+		ret_val = AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
+		break;
+	default:
+		ret_val = AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_PEAK_CONSTRAINED_VBR;
+		break;
+	}
+	std::string msg = "amd get hevc ratecontrol tyep=" + std::to_string((int)(ret_val));
+	GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+	return ret_val;
+}
 void AMFTextureEncoder::Run()
 {
 	GLOBAL_DLL_CONTEXT_LOG()->LogTrace("Start AMFTextureEncoder thread.");

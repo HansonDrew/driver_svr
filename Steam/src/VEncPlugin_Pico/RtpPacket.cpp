@@ -1041,8 +1041,8 @@ int TcpPacket::SendToServer(uint8_t* video, int len, uint8_t* pose, uint8_t ploa
 		memmove(mSendBuf + 6, pose, sizeof(AddPoseData));
 		memmove(mSendBuf + 6 + sizeof(AddPoseData), video, len);
 		int sendLen = len + 6 + sizeof(AddPoseData);
-		ret = MulSend(mSendBuf, sendLen, 0);
-		//ret = send(m_SocketClient, mSendBuf, sendLen, 0);
+		//ret = MulSend(mSendBuf, sendLen, 0);
+		ret = send(m_SocketClient, mSendBuf, sendLen, 0);
 		 
 	}
 	else
@@ -1053,18 +1053,14 @@ int TcpPacket::SendToServer(uint8_t* video, int len, uint8_t* pose, uint8_t ploa
 		memmove(mOtherSendBuf + 6, pose, sizeof(AddPoseData));
 		memmove(mOtherSendBuf + 6 + sizeof(AddPoseData), video, len);
 		int sendLen = len + 6 + sizeof(AddPoseData);
-		ret = MulSend(mOtherSendBuf, sendLen, 0);
-		//ret = send(m_SocketClient, mOtherSendBuf, sendLen, 0);
+		//ret = MulSend(mOtherSendBuf, sendLen, 0);
+		ret = send(m_SocketClient, mOtherSendBuf, sendLen, 0);
 	}
 
 	uint64_t sendendt = nowInNs();
 	 
 	if (((sendendt - sendbegint) > 18000000)&&((sendendt-mConnectTime)> 8000000000))
 	{
-		if (gConfig.GetAutoRateValue()==1)
-		{
-			RtpQualityHelper::GetInstance()->DecreaseBitRate(1.2,(int)DecreaseFlag::high);
-		}
 		string msg = "send too big :" + to_string(double(sendendt - sendbegint) / 1000000.0f)+"len="+to_string(len+64);
 		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
 	}

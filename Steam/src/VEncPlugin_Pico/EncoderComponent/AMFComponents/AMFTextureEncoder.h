@@ -21,6 +21,7 @@ public:
 	void Shutdown();
 	void Submit(amf::AMFData* data, VideoEncoderFrameConfig* frameConfig);
 	void Flush();
+	void SetBitRate(VideoEncoderFrameConfig* frameConfig);
 	amf::AMF_SURFACE_FORMAT GetFormat();
 	int mIndex = 0;
 private:
@@ -34,7 +35,9 @@ private:
 	AMF_VIDEO_ENCODER_PROFILE_ENUM GetAMFCodecProfileFromConfig(const VideoEncoderConfig* config);
 	AMF_VIDEO_ENCODER_CODING_ENUM GetAMFCodecCodingMethodFromConfig(const VideoEncoderConfig* config);
 	amf::AMF_SURFACE_FORMAT GetAMFCodecFormatFromConfig(const VideoEncoderConfig* config);
-	AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_ENUM GetAMFCodecRateControlModeFromConfig(const VideoEncoderConfig* config);
+	//AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_ENUM GetAMFCodecRateControlModeFromConfig(const VideoEncoderConfig* config);
+	AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_ENUM GetAVCRateControlMode(int rvr_config);
+	AMF_VIDEO_ENCODER_HEVC_RATE_CONTROL_METHOD_ENUM  GetHEVCRateControlMode(int rvr_config);
 	void Run();
 };
 

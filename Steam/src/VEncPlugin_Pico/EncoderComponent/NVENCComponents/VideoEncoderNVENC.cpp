@@ -53,7 +53,7 @@ unsigned int __stdcall VideoEncoderNVENC::GetEncodeFrameThread(LPVOID lpParamete
 	VideoEncoderNVENC *EncoderObj = (VideoEncoderNVENC *)lpParameter;
 	int tsindex = 0;
 
-	SetEvent(EncoderObj->mHThreadEvent);
+	//SetEvent(EncoderObj->mHThreadEvent);
 	WaitForSingleObject(EncoderObj->mHEncoderCreateEvent, INFINITE);
 	CloseHandle(EncoderObj->mHEncoderCreateEvent);
 	GLOBAL_DLL_CONTEXT_LOG()->LogAlways(" WaitForSingleObject(mHEncoderCreateEvent).");
@@ -73,7 +73,6 @@ unsigned int __stdcall VideoEncoderNVENC::GetEncodeFrameThread(LPVOID lpParamete
 		{			 
 			string msg = "GetEncodedPacketOnce failed  %d" + to_string(ret);
 			GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);		 
-			EncoderObj->out_frame_index_++;
 		}
 		else
 		{
@@ -190,10 +189,13 @@ unsigned int __stdcall VideoEncoderNVENC::GetEncodeFrameThread(LPVOID lpParamete
 					EncoderObj->mNoIDRTime++;
 				}
 			}
-		 
-			EncoderObj->out_frame_index_++;
 		}
-		
+		{
+			std::unique_lock<std::mutex> lock(EncoderObj->frame_index_mutex_);
+			EncoderObj->last_produce_time_ns_ = nowInNs();
+			EncoderObj->out_frame_index_++;
+			EncoderObj->frame_index_cv_.notify_one();
+		}
 	}
 
 	try
@@ -280,7 +282,37 @@ HANDLE VideoEncoderNVENC::CreateSharedResource(ID3D11Texture2D* texture)
 	pResource->Release();
 	return handle;
 }
-
+_NV_ENC_PARAMS_RC_MODE VideoEncoderNVENC::GetRateControlMode(int rvr_config) 
+{
+	_NV_ENC_PARAMS_RC_MODE ret_val= NV_ENC_PARAMS_RC_VBR;
+	switch (rvr_config)
+	{
+	case 0:
+		ret_val = NV_ENC_PARAMS_RC_CONSTQP;
+		break;
+	case 1:
+		ret_val = NV_ENC_PARAMS_RC_VBR;
+		break;
+	case 2:
+		ret_val = NV_ENC_PARAMS_RC_CBR;
+		break;
+	case 8:
+		ret_val = NV_ENC_PARAMS_RC_CBR_LOWDELAY_HQ;
+		break;
+	case 16:
+		ret_val = NV_ENC_PARAMS_RC_CBR_HQ;
+		break;
+	case 32:
+		ret_val = NV_ENC_PARAMS_RC_VBR_HQ;
+		break;
+	default:
+		ret_val = NV_ENC_PARAMS_RC_VBR;
+		break;
+	}
+	std::string msg = "nvidia get ratecontrol tyep=" + std::to_string((int)(ret_val));
+	GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+	return ret_val;
+}
 void VideoEncoderNVENC::Initialize(const VideoEncoderConfig& config)
 {	
 	 
@@ -290,13 +322,13 @@ void VideoEncoderNVENC::Initialize(const VideoEncoderConfig& config)
 	if (gEcoderIndex == 0)
 	{
 		mHEncoderCreateEvent = CreateEvent(NULL, TRUE, FALSE, TEXT("create Event 1"));
-		mHThreadEvent = CreateEvent(NULL, FALSE, FALSE, TEXT("send Event 1"));		
+		//mHThreadEvent = CreateEvent(NULL, FALSE, FALSE, TEXT("send Event 1"));		
 		 
 	}
 	else
 	{
 		mHEncoderCreateEvent = CreateEvent(NULL, TRUE, FALSE, TEXT("create Event 2"));
-		mHThreadEvent = CreateEvent(NULL, FALSE, FALSE, TEXT("send Event 2"));
+		//mHThreadEvent = CreateEvent(NULL, FALSE, FALSE, TEXT("send Event 2"));
 		 
 	}
 	if (gConfig.GetOutFile() == 1)
@@ -392,7 +424,7 @@ void VideoEncoderNVENC::Initialize(const VideoEncoderConfig& config)
 				mInitializeParams.encodeConfig->encodeCodecConfig.h264Config.sliceMode = 3;
 				mInitializeParams.encodeConfig->encodeCodecConfig.h264Config.sliceModeData = 10;
 			}
-			mInitializeParams.encodeConfig->rcParams.rateControlMode = (NV_ENC_PARAMS_RC_MODE)gConfig.GetRateControllModel();// NV_ENC_PARAMS_RC_CBR_LOWDELAY_HQ;// NV_ENC_PARAMS_RC_CBR_LOWDELAY_HQ;
+		 
 			GLOBAL_DLL_CONTEXT_LOG()->LogAlways("h264 end CreateDefaultEncoderParams.");
 		}
 		else if (mEncodeCLIOptions->GetEncodeGUID() == NV_ENC_CODEC_HEVC_GUID)
@@ -411,20 +443,20 @@ void VideoEncoderNVENC::Initialize(const VideoEncoderConfig& config)
 				mInitializeParams.encodeConfig->encodeCodecConfig.hevcConfig.sliceMode = 3;
 				mInitializeParams.encodeConfig->encodeCodecConfig.hevcConfig.sliceModeData = 10;
 			}			
-			mInitializeParams.encodeConfig->rcParams.rateControlMode = (NV_ENC_PARAMS_RC_MODE)gConfig.GetRateControllModel();// NV_ENC_PARAMS_RC_CBR_LOWDELAY_HQ;// NV_ENC_PARAMS_RC_CBR_LOWDELAY_HQ;
+			
 			GLOBAL_DLL_CONTEXT_LOG()->LogAlways("hevc end CreateDefaultEncoderParams.");
 		}
 	
-		
+		mInitializeParams.encodeConfig->rcParams.rateControlMode = GetRateControlMode(gConfig.GetRateControllModel());// NV_ENC_PARAMS_RC_CBR_LOWDELAY_HQ;// NV_ENC_PARAMS_RC_CBR_LOWDELAY_HQ;
 		mInitializeParams.encodeConfig->rcParams.zeroReorderDelay = 1;
-		mInitializeParams.encodeConfig->rcParams.minQP.qpIntra = 0;
+	/*	mInitializeParams.encodeConfig->rcParams.minQP.qpIntra = 0;
 		mInitializeParams.encodeConfig->rcParams.maxQP.qpIntra = 51;
 		mInitializeParams.encodeConfig->rcParams.minQP.qpInterP = 10;
 		mInitializeParams.encodeConfig->rcParams.maxQP.qpInterP = 51;
-		//mInitializeParams.encodeConfig->rcParams.targetQuality = 51;
+		mInitializeParams.encodeConfig->rcParams.targetQuality = 51;
 		mInitializeParams.encodeConfig->rcParams.maxQP.qpInterP = 51;
 
-		/*mInitializeParams.encodeConfig->rcParams.constQP.qpIntra = 0;
+		mInitializeParams.encodeConfig->rcParams.constQP.qpIntra = 0;
 		mInitializeParams.encodeConfig->rcParams.constQP.qpInterP = 12;*/
 		 
 		msg = "rateControlMode:" + std::to_string(gConfig.GetRateControllModel())+":"+std::to_string(mConfig.minIQP)+":" + std::to_string(mConfig.maxPQP);
@@ -474,7 +506,6 @@ void VideoEncoderNVENC::Initialize(const VideoEncoderConfig& config)
 		
 		HANDLE ret = (HANDLE)_beginthreadex(NULL, 0, &GetEncodeFrameThread, this, 0, NULL);
 		SetThreadPriority(ret, THREAD_PRIORITY_TIME_CRITICAL);
-		WaitForSingleObject(mHThreadEvent, INFINITE);
 		CloseHandle(ret);
 		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(" NVVCE CreateEncoder.");
 		SetEvent(mHEncoderCreateEvent);
@@ -518,7 +549,7 @@ unsigned int __stdcall VideoEncoderNVENC::EncodeThread2(LPVOID lpParameter)
 	int mSvrFrameConfigIndex = 0;
 	MSG msg;
 	int BufferIndex = 0;
-	SetEvent(EncoderObj->mHThreadEvent);
+	//SetEvent(EncoderObj->mHThreadEvent);
 	PeekMessage(&msg, NULL, MSG_ENCODE, MSG_ENCODE, PM_NOREMOVE);
 	int encodeinedx = 0;
 	while (EncoderObj->mEncoderRun)
@@ -569,7 +600,7 @@ unsigned int __stdcall VideoEncoderNVENC::EncodeThread(LPVOID lpParameter)
 	int mSvrFrameConfigIndex = 0;
 	MSG msg;
 	int BufferIndex = 0;
-	SetEvent(EncoderObj->mHThreadEvent);
+	//SetEvent(EncoderObj->mHThreadEvent);
 	PeekMessage(&msg, NULL, MSG_ENCODE, MSG_ENCODE, PM_NOREMOVE);
 
 	while (EncoderObj->mEncoderRun)
@@ -689,33 +720,8 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, VideoEncoderFrameCon
 	int averBit;
 	int maxBit;
 	bool itype = false;
-	if (RtpQualityHelper::GetInstance()->ChangeEncodeBitRate(mIndex,averBit, maxBit, itype))
-	{
-		NV_ENC_RECONFIGURE_PARAMS reConfig = {0};
-		reConfig.version = NV_ENC_RECONFIGURE_PARAMS_VER;
-		reConfig.reInitEncodeParams = mInitializeParams;
-		reConfig.forceIDR = 1;
-		reConfig.resetEncoder = 1;
-		//reConfig.reInitEncodeParams.encodeConfig->gopLength = NVENC_INFINITE_GOPLENGTH;
-		reConfig.reInitEncodeParams.encodeConfig->rcParams.averageBitRate = averBit;
-		reConfig.reInitEncodeParams.encodeConfig->rcParams.maxBitRate = maxBit ;
-		mEncoder->Reconfigure(&reConfig);
-		pPicParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR | NV_ENC_PIC_FLAG_OUTPUT_SPSPPS;
-	}
-
-	if ((frameConfig->flags & RVR::VENC_BITRATE_UPDATE_BY_USER) || (frameConfig->flags & RVR::VENC_BITRATE_UPDATE_BY_CONFIG))
-	{
-		NV_ENC_RECONFIGURE_PARAMS reConfig = { 0 };
-		reConfig.version = NV_ENC_RECONFIGURE_PARAMS_VER;
-		reConfig.reInitEncodeParams = mInitializeParams;
-		reConfig.forceIDR = 1;
-		reConfig.resetEncoder = 1;
-		//reConfig.reInitEncodeParams.encodeConfig->gopLength = NVENC_INFINITE_GOPLENGTH;
-		reConfig.reInitEncodeParams.encodeConfig->rcParams.averageBitRate = frameConfig->avgBitRate;
-		reConfig.reInitEncodeParams.encodeConfig->rcParams.maxBitRate = frameConfig->maxBitRate;
-		mEncoder->Reconfigure(&reConfig);
-		pPicParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR | NV_ENC_PIC_FLAG_OUTPUT_SPSPPS;
-	}
+	 
+	SetBitRate(frameConfig);
 	/*if (itype)
 	{
 		pPicParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR | NV_ENC_PIC_FLAG_OUTPUT_SPSPPS;
@@ -739,7 +745,27 @@ void VideoEncoderNVENC::Transmit(ID3D11Texture2D *pTexture, VideoEncoderFrameCon
 		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
 	}
 }
+void VideoEncoderNVENC::SetBitRate(VideoEncoderFrameConfig* frameConfig) 
+{
 
+	if ((frameConfig->flags & RVR::VENC_BITRATE_UPDATE_BY_USER) || (frameConfig->flags & RVR::VENC_BITRATE_UPDATE_BY_CONFIG)
+		|| (frameConfig->flags & RVR::VENC_BITRATE_UPDATE_BY_NET))
+	{
+		NV_ENC_RECONFIGURE_PARAMS reConfig = { 0 };
+		reConfig.version = NV_ENC_RECONFIGURE_PARAMS_VER;
+		reConfig.reInitEncodeParams = mInitializeParams;
+		reConfig.forceIDR = 1;
+		reConfig.resetEncoder = 1;
+		//reConfig.reInitEncodeParams.encodeConfig->gopLength = NVENC_INFINITE_GOPLENGTH;
+		reConfig.reInitEncodeParams.encodeConfig->rcParams.averageBitRate = frameConfig->avgBitRate;
+		reConfig.reInitEncodeParams.encodeConfig->rcParams.maxBitRate = frameConfig->maxBitRate;
+		mEncoder->Reconfigure(&reConfig);
+
+		string msg = "ChangeEncodeBitRateByUser or config flag" + to_string(frameConfig->flags) + "eye index" + to_string(mIndex) + "average" + to_string(frameConfig->avgBitRate) + "max" + to_string(frameConfig->maxBitRate);
+		GLOBAL_DLL_CONTEXT_LOG()->LogAlways(msg);
+		//pPicParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR | NV_ENC_PIC_FLAG_OUTPUT_SPSPPS;
+	}
+}
 void VideoEncoderNVENC::Flush() 
 {
 	std::vector<std::vector<uint8_t>> vPacket;
@@ -748,11 +774,9 @@ void VideoEncoderNVENC::Flush()
 
 void VideoEncoderNVENC::Shutdown() 
 {
-	mEncoderRun = FALSE;
+	mEncoderRun = false;
+	//CloseHandle(mHThreadEvent);
 	mEncoder->DestroyEncoder();
-	PostThreadMessage(mEncodeThreadId,MSG_EXIT,0,0);
-	PostThreadMessage(rtp_thread_id_, MSG_EXIT, 0, 0);	
-	CloseHandle(mHThreadEvent);
 	
 }
 

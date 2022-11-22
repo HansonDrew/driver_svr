@@ -159,7 +159,7 @@ unsigned int __stdcall RtpQualityBitRateHelperThread(LPVOID lpParameter)
 	while (true)
 	{
 		Sleep(10);
-		RtpQualityHelper::GetInstance()->IncreaseBitRate();
+		//RtpQualityHelper::GetInstance()->IncreaseBitRate();
 	}
 	return 1;
 }
@@ -342,7 +342,7 @@ int RtpQualityHelper::SetSocketParam(SOCKET leftSocket, SOCKET rightSocket, std:
 	mUdpSocket.InitSocket(dstIp, 29718);
 	HANDLE   ret = (HANDLE)_beginthreadex(NULL, 0, &RtpQualitySendRttThread, 0, 0, NULL);
 	ret = (HANDLE)_beginthreadex(NULL, 0, &RtpQualityNetHelperThread, 0, 0, NULL);
-	ret = (HANDLE)_beginthreadex(NULL, 0, &RtpQualityBitRateHelperThread, 0, 0, NULL);
+	//ret = (HANDLE)_beginthreadex(NULL, 0, &RtpQualityBitRateHelperThread, 0, 0, NULL);
 	return 1;
 }
 int RtpQualityHelper::Init()
@@ -402,7 +402,15 @@ uint64_t RtpQualityHelper::FindServerTime(uint64_t sequence)
 
 	 return 1;
  }
- bool RtpQualityHelper::ChangeEncodeBitRate(int index, int& averageRate, int& maxRate, bool& itype)
+ 
+ void RtpQualityHelper::GetCurrentRate(int& averageRate, int& maxRate)
+ {
+	 averageRate = curAverageRate;
+	 maxRate = curMaxRate;
+ }
+
+/*
+bool RtpQualityHelper::ChangeEncodeBitRate(int index, int& averageRate, int& maxRate, bool& itype)
  {
 	 if (gConfig.GetAutoRateValue()==0)
 	 {
@@ -414,13 +422,13 @@ uint64_t RtpQualityHelper::FindServerTime(uint64_t sequence)
 		 if (mIdrCount % 2 == 0)
 		 {
 			 mLeftIdr = true;
-			 
+
 		 }
 		 else
 		 {
 			 mRightIdr = true;
 		 }
-		 mIdrCount++;	 
+		 mIdrCount++;
 	 }
 	 if (index==0)
 	 {
@@ -428,7 +436,7 @@ uint64_t RtpQualityHelper::FindServerTime(uint64_t sequence)
 		 itype = mLeftIdr;
 		 mLeftChangeRate = false;
 		 mLeftIdr = false;
-	 } 
+	 }
 	 else
 	 {
 		 ret = mRightChangeRate;
@@ -436,19 +444,13 @@ uint64_t RtpQualityHelper::FindServerTime(uint64_t sequence)
 		 mRightChangeRate = false;
 		 mRightIdr = false;
 	 }
-	 
+
 	 averageRate = curAverageRate;
 	 maxRate = curMaxRate;
-	 
+
 	 return ret;
  }
- void RtpQualityHelper::GetCurrentRate(int& averageRate, int& maxRate)
- {
-	 averageRate = curAverageRate;
-	 maxRate = curMaxRate;
- }
-
- void RtpQualityHelper::IncreaseBitRate() 
+void RtpQualityHelper::IncreaseBitRate()
  {
 	 //rtc 模式使用建议值，不自动增长
 	 if (gConfig.GetRtcOrBulkMode_() == 1) 
@@ -591,7 +593,7 @@ uint64_t RtpQualityHelper::FindServerTime(uint64_t sequence)
 		
 	 }
 	
- }
+ }*/
  void RtpQualityHelper::ForceMaxBitRate(int averageRate, int maxRate)
  {
 	 SetBitRate(averageRate, maxRate);

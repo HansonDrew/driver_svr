@@ -62,6 +62,8 @@ public:
 	float GetGammaValue() { return gamma_; };
 	float GetSharper();
 	float GetSharperValue() { return shaper; };
+	float GetSharperWeight();
+	float GetSharperWeightValue() { return shaper_weight; };
 	float GetLeftPitch();
 	float GetLeftPitchValue() { return left_pitch_; };
 
@@ -110,6 +112,8 @@ public:
 	int GetLinearResolation() { return mLinearResolation; };
 	int GetMicWork_();
 	int GetMicWorkValue() { return mic_work_; };
+	int GetMicVolume_();
+	int GetMicVolumeValue() { return mic_volume_; };
 	int GetSplit_() { return split_; };
 	int GetDepthComputeValue() { return depth_compute_; };
 	int GetDepthCompute();
@@ -154,6 +158,7 @@ private:
 	float alpha_ = 1;
 	float gamma_ = 1;
 	float shaper=0;
+	float shaper_weight = 0;
 	float left_pitch_ = 0.0f;
 	float left_yaw_ = 0.0f;
 	float left_roll_ = 0.0f;
@@ -161,7 +166,7 @@ private:
 	float left_add_y_ = 0.0f;
 	float left_add_z_ = 0.0f;
 	int mic_work_ = 0;
-
+	int mic_volume_ = 0;
 	float right_pitch_ = 0.0f;
 	float right_yaw_ = 0.0f;
 	float right_roll_ = 0.0f;

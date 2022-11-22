@@ -34,7 +34,7 @@ public:
 	
 
 
-	static GC  TcpSensoorGc;  //垃圾回收类的静态成员
+	static GC  tcp_sensor_gc_;  //垃圾回收类的静态成员
 	
 	SOCKET locate_socket_;
 	SOCKET hmd_socket_;
@@ -53,14 +53,11 @@ public:
 #define  TcpSensorBufLen  1024*1024
 	char recv_buf_[TcpSensorBufLen];
 	int recv_len_=0;
-	unsigned mReconnectThreadId;
-
+	
 	std::string mIp;
 	int mPort;
 
-	unsigned short m_usSeqNum;
 	~TcpSensorSocket() {   };
-	uint64_t mConnectTime = 0;
 	u_short socket_port;
 	bool GetLoop() { return loop_; };
 	int64_t last_hmd_sdk_ts_ = -1;

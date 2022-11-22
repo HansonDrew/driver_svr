@@ -164,7 +164,7 @@ int ConfigReader::GetBitRate()
 	{
 		mMaxBitRate = mAverageBitRate + mAverageBitRate / 5;
 	}
-	return 1;
+	return mAverageBitRate;
 }
 
 int ConfigReader::GetTcp()

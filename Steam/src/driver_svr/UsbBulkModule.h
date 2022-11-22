@@ -25,7 +25,7 @@ namespace pico_streaming
 			int eye_inedex, int64_t gen_timestamp,EncodeOutWithInfo encode_info);
 		bool SendAudioFrame(uint8_t* data, int length, int samples);
 		bool GetEngineStartup() { return engine_startup_; };
-		bool SendMsg(char* buf, int len);
+		bool SendMsg(char* buf, int len,int channel=2);
 		RVR::RVRPoseHmdData hmd_pose_ = { 0 };
 		RVR::RVRControllerData left_pose_ = { 0 };
 		RVR::RVRControllerData right_pose_ = { 0 };
@@ -43,6 +43,7 @@ namespace pico_streaming
         virtual void NotifyReceiveData(const TransportData& data);
 		void HandleAudioData(const TransportData& data);
 		void HandleSensorData(const TransportData& data);
+		void HandleMsgData(const TransportData& data);
 		void CheckSensorReceiveThread();
 		inline bool CheckUsbMode();
 	private:

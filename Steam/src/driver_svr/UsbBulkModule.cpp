@@ -113,13 +113,14 @@ namespace pico_streaming
     void UsbBulkModule::Start()
     {
         PXR_CHECK_RET(engine_startup_, "has been started", );
-        PXR_INFO_THIS("start usb mode");
+        ///PXR_INFO_THIS("start usb mode");
         engine_startup_ = true;
         server_ = TransportServer::Create(TransportType::kTcp);
         TransportServer::Config config;
         config.tcp_host.SetHost_("0.0.0.0");
         config.tcp_host.SetPort_(29000);
         config.callback = this;
+        PXR_INFO_THIS("callback= " << PXR_LOG_PTR(config.callback));
         if (!server_->Start(config))
         {
             PXR_ERROR_THIS("start tcp server failed");
@@ -197,7 +198,7 @@ namespace pico_streaming
         int sendLen = length + 6 + sizeof(WireLessType::AddPoseData);
         buffer.SetSize_(sendLen);
         auto mSendBuf = buffer.Data_();
-        uint8_t  pload = 98;//gRtpPloadTpye;//hevc
+        uint8_t  pload = encode_info.PloadTpye;//gRtpPloadTpye;//hevc
         memcpy(mSendBuf, &length, sizeof(int));
         memcpy(mSendBuf + 4, &pload, sizeof(uint8_t));
         memcpy(mSendBuf + 5, &eye_inedex, sizeof(uint8_t));
@@ -237,7 +238,7 @@ namespace pico_streaming
         return true;
     }
 
-    bool UsbBulkModule::SendMsg(char* buf, int len)
+    bool UsbBulkModule::SendMsg(char* buf, int len, int channel)
     {
         PXR_CHECK_RET(!CheckUsbMode(), "check usb mode failed", false);
         PXR_CHECK_RET(!engine_startup_, "usb mode not started", false);
@@ -251,6 +252,7 @@ namespace pico_streaming
         memcpy(buffer.Data_(), buf, len);
 
         PXR_DEBUG_THIS("send message len= " << len);
+        msg_send_buffer_.channel() = channel;
         if (!session_->SendData(msg_send_buffer_))
         {
             PXR_ERROR_THIS("send data failed");
@@ -302,6 +304,27 @@ namespace pico_streaming
         PXR_INFO_THIS("res= " << res);
         DriverLog("usb mode: assistant disconnected");
         connected_ = false;
+
+		if (gConfigReader.GetRtcOrBulkMode_() == 2)
+		{
+			PXR_INFO_THIS(" hmd & controller disconnected");
+
+			RVR::RVRPoseHmdData hmd_pose = { 0 };
+			memmove(&hmd_pose, &hmd_pose_, sizeof(RVR::RVRPoseHmdData));
+			hmd_pose.valid = FALSE;
+			g_svrDriver.AddHmdPose(&hmd_pose);
+
+			RVR::RVRControllerData controller_data = { 0 };
+			memmove(&controller_data, &left_pose_, sizeof(RVR::RVRPoseHmdData));
+			controller_data.connectionState = RVR::RVRControllerConnectionState::kDisconnected;
+			g_svrDriver.AddControllerPose(0, &controller_data);
+
+			controller_data = { 0 };
+			memmove(&controller_data, &right_pose_, sizeof(RVR::RVRPoseHmdData));
+			controller_data.connectionState = RVR::RVRControllerConnectionState::kDisconnected;
+			g_svrDriver.AddControllerPose(1, &controller_data);
+		}
+
     }
 
     void UsbBulkModule::NotifyServerStopped(int res)
@@ -324,6 +347,11 @@ namespace pico_streaming
         case 1:
         {
             HandleAudioData(data);
+            break;
+        }
+        case 4: 
+        {
+            HandleMsgData(data);
             break;
         }
         default:
@@ -354,8 +382,14 @@ namespace pico_streaming
     void UsbBulkModule::HandleSensorData(const TransportData& data)
     {
         static const size_t kSensorDataDefaultSize = 443;
+        static const size_t kSensorDataWithachedSize = 459;
         const auto& buffer = data.data();
-        PXR_CHECK_RET(buffer.Size_() != kSensorDataDefaultSize, "check sensor size failed", );
+		bool msg_len_err = false;
+		if ((buffer.Size_() != kSensorDataDefaultSize) && (buffer.Size_() != kSensorDataWithachedSize))
+		{
+			msg_len_err = true;
+		}
+		PXR_CHECK_RET(msg_len_err, "check sensor size failed", );
 
         if (buffer[0] != 0x13 || buffer[1] != 0x05)
         {
@@ -393,8 +427,19 @@ namespace pico_streaming
             kSensorMsgControllerPoseLen, 1, right_pose);
         ptr += kSensorMsgControllerPoseLen;
         last_right_controller_recv_timestamp_ = GetTimestampUs();
-
+		if (buffer.Size_() == kSensorDataWithachedSize)
+		{
+			memmove(&hmd_pose.net_cost, ptr, sizeof(int));
+		}
+		else
+		{
+			hmd_pose.net_cost = 0;
+		}
+        
         SensorPasser::GetInstance()->SetAllSensor(hmd_pose, left_pose, right_pose);
+		
+
+
         if (g_svrDriver.GetStreamingHmdDriver()->GetIsAdded_() == false)
         {
             PXR_DEBUG_THIS("GetIsAdded_ ==false");
@@ -410,7 +455,30 @@ namespace pico_streaming
         PXR_DEBUG_THIS("left pose= " << ToString(left_pose));
         PXR_DEBUG_THIS("right pose= " << ToString(right_pose));
     }
-
+    void UsbBulkModule::HandleMsgData(const TransportData& data) 
+    {
+        const auto& buffer = data.data();
+        uint8_t* ptr = const_cast<uint8_t*>(buffer.Data_());
+        char msg_buf[256] = { 0 };
+        memmove(msg_buf, ptr, buffer.Size_());
+        DriverLog("get usb msg %s", msg_buf);
+        if (strcmp(msg_buf,"get_encode_param")==0)
+        {
+			WireLessType::EncodeParam  encode_param = { 0 };
+			encode_param.render_width = gConfigReader.GetEveWidth();
+			encode_param.render_height = gConfigReader.GetEveHeight();
+			encode_param.encode_width = gConfigReader.GetEncoderWidth() / 2;
+			encode_param.encode_heigth = gConfigReader.GetEncoderHeight();
+			encode_param.cut_x = gConfigReader.GetCutx();
+			encode_param.cut_y = gConfigReader.GetCuty();
+			encode_param.compress = gConfigReader.GetComPress();
+            bool ret=SendMsg((char*)&encode_param, sizeof(encode_param),4);
+			DriverLog("encode param %d %d %d %d %d %d %d %d\n",
+				encode_param.render_width, encode_param.render_height,
+				encode_param.encode_width, encode_param.encode_heigth,
+				encode_param.cut_x, encode_param.cut_y, encode_param.compress,ret);
+        }
+    }
     void UsbBulkModule::CheckSensorReceiveThread()
     {
         PXR_INFO_THIS("begin to check sensor timeout");

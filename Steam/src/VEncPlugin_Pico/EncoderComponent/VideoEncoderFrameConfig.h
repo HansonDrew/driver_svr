@@ -39,7 +39,7 @@ struct VideoEncoderFrameConfig {
 
     // Frame number
     int         frameNumber;
-
+    int         net_cost;
 	//Saved origin RVR::VEncFrameConfig* for being passed back to RVR SDK 
     void* originPointer;
 };

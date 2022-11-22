@@ -5,7 +5,7 @@ using namespace std;
 //#define DEBUGWIRTEFILE
 #define BITRATECHANGE 5000000
 #define MAXBITRATE 120000000
-#define MINBITRATE 1000000
+#define MINBITRATE 2500000
 class ConfigReader
 {
 public:

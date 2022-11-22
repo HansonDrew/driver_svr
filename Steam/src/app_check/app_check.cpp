@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
 
 		char app_value[1024] = { 0 };
 		int ret_app_value = 0;
-		if (app_run !=0) 
+	//	if (app_run !=0) 
 		{
 			
 			ret_app_name=vr::VRApplications()->GetApplicationPropertyString(app_key, vr::EVRApplicationProperty::VRApplicationProperty_Name_String, app_name,1024, &error_code);
@@ -293,7 +293,7 @@ int main(int argc, char* argv[])
 		}
 	
 
-		Sleep(100);
+		Sleep(500);
 	}
 	
 

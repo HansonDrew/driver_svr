@@ -642,14 +642,7 @@ void ControllerDriver::LimitPose(RVR::RVRControllerData* pose)
 }
 void ControllerDriver::UpdatePose(RVR::RVRControllerData* pose,bool dp)
 {
-	if (g_test_sensor)
-	{
-		if (g_test_sensor_mode<4)
-		{
-			return;
-		}
-		
-	}
+	
 	if (gConfigReader.GetRtcOrBulkMode_() != 2)
 	{
 		ReSetPose();
@@ -695,21 +688,18 @@ void ControllerDriver::UpdatePose(RVR::RVRControllerData* pose,bool dp)
 				}
 			}
 			last_data = data;
-			AdjustControllerPose(data);
+		//	AdjustControllerPose(data);
 			 			
             GetDriverPose(&driver_pose_, &data);
 		
-			/*if (gControllerAcc == 0|| gConfigReader.GetAppRunValue() == 2||gOverlayShow || gDashboardActivated || gConfigReader.GetAppRunValue() == 0)
+		if (gControllerAcc == 0|| gConfigReader.GetAppRunValue() == 2||gOverlayShow || gDashboardActivated || gConfigReader.GetAppRunValue() == 0)
 			{
 				driver_pose_.vecAcceleration[0] = driver_pose_.vecAcceleration[1] = driver_pose_.vecAcceleration[2] = 0;
 				driver_pose_.vecVelocity[0] = driver_pose_.vecVelocity[1] = driver_pose_.vecVelocity[2] = 0;
 				driver_pose_.vecAngularVelocity[0] = driver_pose_.vecAngularVelocity[1] = driver_pose_.vecAngularVelocity[2] = 0;
 				driver_pose_.vecAngularAcceleration[0] = driver_pose_.vecAngularAcceleration[1] = driver_pose_.vecAngularAcceleration[2] = 0;
-			}*/
-			if (g_test_sensor && (g_test_sensor_mode > 0))
-			{
-				return;
 			}
+			
             vr::VRServerDriverHost()->TrackedDevicePoseUpdated(m_unObjectId, driver_pose_, sizeof(vr::DriverPose_t));
             lastTS[mControllerIndex] = data.timestamp;
 			

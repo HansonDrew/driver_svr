@@ -20,7 +20,8 @@
 #include "runtime_wireless_mode_frame_depth_calc.h"
 #include "driver_define.h"
 #include "sensor_passer.h"
-
+#include "config_reader.h"
+#include"stringtool.h"
 #ifndef NO_RTC
 #include "ByteRtcMoudel.h"
 #endif
@@ -28,11 +29,14 @@
 #ifndef NO_USBBULK
 #include "UsbBulkModule.h"
 #endif
+
+
+
+ 
 using namespace vr;
 using namespace RVR;
 using namespace pxr;
-#include "config_reader.h"
-#include"stringtool.h"
+
 extern ConfigReader gConfigReader;
 extern PluginManger gPluginManger;
 #define MSG_VSYNC WM_USER+120
@@ -344,12 +348,15 @@ unsigned int __stdcall StreamingHmdDriver::FunctionDebugThread(LPVOID lpParamete
 					 
 		}
 		Sleep(5);
+		
 		gConfigReader.GetMicWork_();
+		gConfigReader.GetMicVolume_();
 		gConfigReader.GetBright();
 		gConfigReader.GetSaturation();
 		gConfigReader.GetContrast();
 		gConfigReader.GetAlpha();
 		gConfigReader.GetSharper();
+		gConfigReader.GetSharperWeight();
 		gConfigReader.GetGamma();
 		gConfigReader.GetLeftPitch();
 		gConfigReader.GetLeftYaw();
@@ -496,6 +503,7 @@ StreamingHmdDriver::StreamingHmdDriver(RVRStub* mStubInstance, ID3D11Device* d3d
 #endif
 	InitializeCriticalSection(&cs_pose_);
 	InitializeCriticalSection(&cs_depth_);
+	ReSetPose();
 }
 
 //-----------------------------------------------------------------------------
@@ -643,6 +651,9 @@ void StreamingHmdDriver::StartEncoder()
 		{
 			encConfig.fps = encConfig.fps / 2;
 		}
+#ifdef FORCE_HALFFPS
+		encConfig.fps = encConfig.fps / 2;
+#endif
 		
 	}
 	
@@ -790,7 +801,7 @@ vr::EVRInitError StreamingHmdDriver::Activate(vr::TrackedDeviceIndex_t unObjectI
 	vr::VRProperties()->SetBoolProperty(m_ulPropertyContainer, Prop_DriverDirectModeSendsVsyncEvents_Bool,true);
 	
 //	vr::VRProperties()->SetBoolProperty(m_ulPropertyContainer, Prop_DriverDirectModeSendsVsyncEvents_Bool, true); 
-	vr::VRProperties()->SetFloatProperty(m_ulPropertyContainer, Prop_SecondsFromVsyncToPhotons_Float, 0.001 );
+	vr::VRProperties()->SetFloatProperty(m_ulPropertyContainer, Prop_SecondsFromVsyncToPhotons_Float, 0.003 );
 	vr::VRProperties()->SetStringProperty(m_ulPropertyContainer, Prop_ModelNumber_String, m_sModelNumber.c_str());
 	vr::VRProperties()->SetStringProperty(m_ulPropertyContainer, Prop_RenderModelName_String, m_sModelNumber.c_str());
 	vr::VRProperties()->SetFloatProperty(m_ulPropertyContainer, Prop_UserIpdMeters_Float, ipd_);
@@ -1046,14 +1057,13 @@ void StreamingHmdDriver::CacheLatestPose(RVR::RVRPoseHmdData* poseData)
 	poseDataLatest = *poseData;
 	ReleaseMutex(poseHistoryLock);
 }
-void StreamingHmdDriver::SetLastRenderPose(RVR::RVRPoseHmdData hmd_pose)
+void StreamingHmdDriver::SetInputRenderPose(RVR::RVRPoseHmdData hmd_pose)
 {
-	{
 	 
-		last_render_pose = hmd_pose;
-		last_render_pose.hmdTimeStamp = hmd_pose.poseTimeStamp;
+	input_render_pose_ = hmd_pose;
+	input_render_pose_.hmdTimeStamp = hmd_pose.poseTimeStamp;
 
-	};
+	 
 }
 void StreamingHmdDriver::UpdatePose(RVR::RVRPoseHmdData* data)
 {
@@ -1061,15 +1071,9 @@ void StreamingHmdDriver::UpdatePose(RVR::RVRPoseHmdData* data)
 	{
 		DriverLog("trace");
 	}
-	SetLastRenderPose(*data);
-	if (g_test_sensor)
-	{
-		if (g_test_sensor_mode<4)
-		{
-			return;
-		}
+	SetInputRenderPose(*data);
+	SetOutputRenderPose(*data);
 	
-	}
 	if (gConfigReader.GetRtcOrBulkMode_() != 2)
 	{
 		ReSetPose();
@@ -1109,14 +1113,14 @@ void StreamingHmdDriver::UpdatePose(RVR::RVRPoseHmdData* data)
 		 
 		//data->poseRecvTime = GetTimestampUs();
 		 
-	/*	if (gControllerAcc == 0 || gConfigReader.GetAppRunValue() == 2 || gOverlayShow || gDashboardActivated || gConfigReader.GetAppRunValue() == 0)
+		if (gControllerAcc == 0 || gConfigReader.GetAppRunValue() == 2 || gOverlayShow || gDashboardActivated || gConfigReader.GetAppRunValue() == 0)
 		{
 			driver_pose_.vecAcceleration[0] = driver_pose_.vecAcceleration[1] = driver_pose_.vecAcceleration[2] = 0;
 			driver_pose_.vecVelocity[0] = driver_pose_.vecVelocity[1] = driver_pose_.vecVelocity[2] = 0;
 			driver_pose_.vecAngularVelocity[0] = driver_pose_.vecAngularVelocity[1] = driver_pose_.vecAngularVelocity[2] = 0;
 			driver_pose_.vecAngularAcceleration[0] = driver_pose_.vecAngularAcceleration[1] = driver_pose_.vecAngularAcceleration[2] = 0;
-		}*/
-		SetCurrentPose(*data);
+		}
+		
 		vr::VRServerDriverHost()->TrackedDevicePoseUpdated(vr_device_index_, driver_pose_, sizeof(DriverPose_t));
 		if (data->valid)
 		{
@@ -1507,8 +1511,8 @@ void StreamingHmdDriver::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 	if (compositor.NumberOfLayers() == 0)
 	{
 		picoRenderStart = RVR::nowInNs();
-		mCurrentRenderPose.endGameRenderStamp = picoRenderStart;
-		//RVR_LOG_A("game render cost= %lld", mCurrentRenderPose.endGameRenderStamp-mCurrentRenderPose.beginGameRenderStamp);
+		out_render_pose_.endGameRenderStamp = picoRenderStart;
+		//RVR_LOG_A("game render cost= %lld", out_render_pose_.endGameRenderStamp-out_render_pose_.beginGameRenderStamp);
 		//Depth Texture from the first layer
 		depthTexture[Eye::kLeft] = D3DHelper::AsTexture(d3d11device_, (HANDLE)(perEye[Eye::kLeft].hDepthTexture));
 		depthTexture[Eye::kRight] = D3DHelper::AsTexture(d3d11device_, (HANDLE)(perEye[Eye::kRight].hDepthTexture));
@@ -1539,27 +1543,27 @@ void StreamingHmdDriver::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 		compositor.Add(&layerDesc);
 	}
 	
-	ExtractRVRPoseHmdData(&mCurrentRenderPose, &perEye[Eye::kLeft].mHmdPose);
+	SetOutputRenderPoseFromMatrix34(&out_render_pose_, &perEye[Eye::kLeft].mHmdPose);
 
 	char msg[2048] = { 0 };
 	sprintf_s(msg, "get rotation %lf,%lf,%lf,%lf,  pose %lf,%lf,%lf  ts=%lld\n",
-		mCurrentRenderPose.rotation.w, mCurrentRenderPose.rotation.x, mCurrentRenderPose.rotation.y, mCurrentRenderPose.rotation.z,
-		-mCurrentRenderPose.position.x, -mCurrentRenderPose.position.y, -mCurrentRenderPose.position.z,(RVR::nowInNs()- endPresent)/1000000);
+		out_render_pose_.rotation.w, out_render_pose_.rotation.x, out_render_pose_.rotation.y, out_render_pose_.rotation.z,
+		-out_render_pose_.position.x, -out_render_pose_.position.y, -out_render_pose_.position.z,(RVR::nowInNs()- endPresent)/1000000);
 
 	
 	//RVR_LOG_A(msg);
 	//if (g_test_sensor&&(g_test_sensor_mode>1))
 	//{
-	//	mCurrentRenderPose.position = g_test_rvrhmd.position;
-	//	mCurrentRenderPose.rotation = g_test_rvrhmd.rotation;
+	//	out_render_pose_.position = g_test_rvrhmd.position;
+	//	out_render_pose_.rotation = g_test_rvrhmd.rotation;
 	//}
 	//RVR::RVRPoseHmdData out_pose;
 	//if (gConfigReader.GetFindHistoryPose()==1)
 	//{
-	//	bool ret = FindAndDelete(mCurrentRenderPose, out_pose);
+	//	bool ret = FindAndDelete(out_render_pose_, out_pose);
 	//	if (ret)
 	//	{
-	//		mCurrentRenderPose.poseRecvTime = out_pose.poseRecvTime;
+	//		out_render_pose_.poseRecvTime = out_pose.poseRecvTime;
 	//		//RVR_LOG_A("find ok");
 	//	}
 	//	else
@@ -1572,9 +1576,9 @@ void StreamingHmdDriver::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 	/*RVR::RVRPoseHmdData RightRenderPose;
 	ExtractRVRPoseHmdData(&RightRenderPose, &perEye[Eye::kRight].mHmdPose);
 	string msg;
-	msg = "left p:" + to_string(mCurrentRenderPose.position.x)+":"+to_string(mCurrentRenderPose.position.y) + ":"
-		+ to_string(mCurrentRenderPose.position.z)+"r:"+ to_string(mCurrentRenderPose.rotation.w) + ":" + to_string(mCurrentRenderPose.rotation.x)
-		+ ":" + to_string(mCurrentRenderPose.rotation.y) + ":" + to_string(mCurrentRenderPose.rotation.z);
+	msg = "left p:" + to_string(out_render_pose_.position.x)+":"+to_string(out_render_pose_.position.y) + ":"
+		+ to_string(out_render_pose_.position.z)+"r:"+ to_string(out_render_pose_.rotation.w) + ":" + to_string(out_render_pose_.rotation.x)
+		+ ":" + to_string(out_render_pose_.rotation.y) + ":" + to_string(out_render_pose_.rotation.z);
 	RVR_LOG_A(msg.c_str());
 
 	msg = "right p:" + to_string(RightRenderPose.position.x) + ":" + to_string(RightRenderPose.position.y) + ":"
@@ -1591,7 +1595,7 @@ void StreamingHmdDriver::SubmitLayer(const SubmitLayerPerEye_t(&perEye)[2])
 //	if (compositor.NumberOfLayers() == 0)
 //	{
 //		//The Current Pose -- Required for passing this to the client along with the encoded frame.
-//		ExtractRVRPoseHmdData(&mCurrentRenderPose, pPose);
+//		ExtractRVRPoseHmdData(&out_render_pose_, pPose);
 //
 //		//Depth Texture from the first layer
 //		depthTexture[Eye::kLeft] = D3DHelper::AsTexture(d3d11Device, (HANDLE)(perEye[Eye::kLeft].hDepthTexture));
@@ -1617,23 +1621,10 @@ int64_t countPresent = 0;
 int64_t firstPresent = -1;
 uint64_t last_t = 0;
 
-
 //-----------------------------------------------------------------------------
 void StreamingHmdDriver::Present(vr::SharedTextureHandle_t syncTexture)
 //-----------------------------------------------------------------------------
 {
-	countPresent++;
-	int64_t PresentTime = RVR::nowInNs();
-	//RVR_LOG_A("present cost=%f ", (PresentTime - endPresent)/1000000.f);
-	if (firstPresent < 0)
-	{
-		firstPresent = PresentTime;
-	}
-
-
-	//RVR_LOG_A("present intervalt=%f  average=%f", (PresentTime - lastPresent)/1000.f,(PresentTime-firstPresent)/countPresent/1000.f);
-
-	//mCurrentRenderPose.poseRecvTime = GetTimestampUs();
 
 	IDXGIKeyedMutex* pKeyedMutex = D3DHelper::AcquireMutex(d3d11device_, (HANDLE)syncTexture);
 	if (pKeyedMutex != nullptr)
@@ -1642,39 +1633,14 @@ void StreamingHmdDriver::Present(vr::SharedTextureHandle_t syncTexture)
 		{
 			float q1[4] = { 0 };
 			float q2[4] = { 0 };
-			RVR::RVRPoseHmdData current_pose = GetCurrentPose();
+			RVR::RVRPoseHmdData current_pose = GetOutputRenderPose();
+			int frame_index = frame_index_ % 2;
+			if (gConfigReader.GetSingleEncode() == 1)
+			{
+				frame_index = 0;
+			}
 
-
-			//RVR::RVRPoseHmdData new_pose = { 0 };//new_pose used for atw(tw) .delete in  shader, not delete in  code
-			//if (gConfigReader.GetSmoothControllerValue() == 3)
-			//{
-			//	SensorPasser::GetInstance()->GetHmdSensor(new_pose);
-			//}
-			//else
-			//{
-			//	////?? get new_pose 
-			//}
-
-			//new_pose.rotation.x = -new_pose.rotation.x;
-			//new_pose.rotation.y = -new_pose.rotation.y;
-			//new_pose.rotation.z = -new_pose.rotation.z;
-
-			////SetCurrentPose(new_pose);//for tw
-
-			//q1[0] = current_pose.rotation.w;
-			//q1[1] = current_pose.rotation.x;
-			//q1[2] = current_pose.rotation.y;
-			//q1[3] = current_pose.rotation.z;
-
-			//q2[0] = new_pose.rotation.w;
-			//q2[1] = new_pose.rotation.x;
-			//q2[2] = new_pose.rotation.y;
-			//q2[3] = new_pose.rotation.z;
-
-
-			////DriverLog("tw  w,x,y,z q1 :%f,%f,%f,%f q2: %f,%f,%f,%f", q1[0], q1[1], q1[2], q1[3], q2[0], q2[1], q2[2], q2[3]);
-			//compositor.SetQ1Q2(q1, q2);
-			compositor.Merge2to1(frame_index_ % 2);
+			compositor.Merge2to1(frame_index, hmd_data, left_data, right_data, current_pose.poseTimeStamp, current_pose.hmd_index);
 		}
 		else
 		{
@@ -1688,348 +1654,6 @@ void StreamingHmdDriver::Present(vr::SharedTextureHandle_t syncTexture)
 		picoRenderEnd = RVR::nowInNs();
 		RVR_LOG_A("layers render time=%f", float(picoRenderEnd - picoRenderStart) / 1000000.0f);
 	}
-
-	////////////
-
-	if (((left_encoder_init_ && right_encoder_init_) == false) && (frame_index_ == 720))
-	{
-		vr::VRServerDriverHost()->RequestRestart("Pico streaming failed to initialize,please Check whether the computer configuration meets the streaming requirements", nullptr, nullptr, nullptr);
-	}
-	///////////////////
-	uint64_t CopyStart = RVR::nowInNs();
-
-	last_t = CopyStart;
-	bool ret = false;
-
-
-	ID3D11Texture2D* leftTexture = NULL;
-	ID3D11Texture2D* rightTexture = NULL;
-	int configindex = 0;
-	RVR::RVRPoseHmdData current_render_pose = GetCurrentPose();
-	current_render_pose.beginEncodeStamp = RVR::nowInNs();
-	if (gConfigReader.GetSplit_() == 0)
-	{
-		if (gPluginManger.mSetPoseCachePtr != NULL)
-		{
-			current_render_pose.predictedTimeMs = GetDetph_();
-
-			current_render_pose.hmdTimeStamp = GetLastRenderPose().hmdTimeStamp;
-			current_render_pose.poseRecvTime = GetLastRenderPose().poseRecvTime;
-			
-			SensorManger::GetInstance()->SaveSensor(current_render_pose);	
-
-			gPluginManger.DoSetPoseCache(&current_render_pose);
-
-			///*RVR::RVRPoseHmdData render_pose = GetLastRenderPose();
-			//render_pose.predictedTimeMs = GetDetph_();
-			//RVR::RVRPoseHmdData render_pose_in = { 0 };
-			//memmove(&render_pose_in, &render_pose, sizeof(RVR::RVRPoseHmdData));
-			//gPluginManger.DoSetPoseCache(&render_pose_in);*/
-		}
-
-		configindex = GetEncodeFrameConfig(CopyStart);
-
-		mFrameConfig[configindex].timestamp = CopyStart - current_render_pose.poseRecvTime;
-		if (gLog)
-		{
-			RVR_LOG_A("steamvr render time cost %lld ", mFrameConfig[configindex].timestamp / 1000000);
-		}
-	}
-	if (gConfigReader.GetNotEncodeValue()==0)
-	{
-		if (gConfigReader.BigPicture() == 0)
-		{
-			leftTexture = compositor.Get(Eye::kLeft);
-			rightTexture = compositor.Get(Eye::kRight);
-			if (left_encoder_init_ && right_encoder_init_)
-			{
-				mLeftEnvc->QueueBuffer(leftTexture, &mFrameConfig[configindex]);
-				mRightEnvc->QueueBuffer(rightTexture, &mFrameConfig[configindex]);
-			}
-		}
-		else
-		{
-			ID3D11Texture2D* savepicture = NULL;
-			if (frame_index_ % 2 == 0)
-			{
-				ID3D11Texture2D* leftTexture = NULL;
-				leftTexture = compositor.Get2to1(Eye::kLeft);
-
-				if (left_encoder_init_)
-				{
-					if (gConfigReader.GetSplit_() == 0)
-					{
-						mLeftEnvc->QueueBuffer(leftTexture, &mFrameConfig[configindex]);
-					}
-
-				}
-				savepicture = leftTexture;
-			}
-			else
-			{
-
-				ID3D11Texture2D* rightTexture = NULL;
-				rightTexture = compositor.Get2to1(Eye::kRight);
-
-				if (right_encoder_init_)
-				{
-					if (gConfigReader.GetSplit_() == 0)
-					{
-						if (gConfigReader.GetSingleEncode() == 0)
-						{
-							mRightEnvc->QueueBuffer(rightTexture, &mFrameConfig[configindex]);
-						}
-						else
-						{
-							mLeftEnvc->QueueBuffer(rightTexture, &mFrameConfig[configindex]);
-						}
-					}
-				}
-				savepicture = rightTexture;
-			}
-			if (gPictureTrace)
-			{
-				wstring filename = L"picture//" + to_wstring(pictureindex) + L".jpg";
-				D3DHelper::SaveTextureToFile(d3d11device_, savepicture, filename.c_str());
-				pictureindex++;
-			}
-		}
-
-	}
-	
-	if (gLog)
-	{
-		RVR_LOG_A("all render cost time:%f", float(CopyStart - current_render_pose.poseRecvTime) / 1000000.0f);
-	}
-
-	if (gConfigReader.GetSplit_() == 1)
-	{
-		ID3D11DeviceContext* pContext;
-		d3d11device_->GetImmediateContext(&pContext);
-		ID3D11Texture2D* split_texture = NULL;
-		int index = 0;
-		split_texture = compositor.GetSplitTextureForRender(index);
-		split_poses_[index] = GetCurrentPose();
-		IDXGIKeyedMutex* pKeyedMutex = NULL;
-		pKeyedMutex = D3DHelper::AcquireMutexByTexture(split_texture);
-		if (pKeyedMutex != NULL)
-		{
-			if (pKeyedMutex->AcquireSync(0, 10) == S_OK)
-			{
-				if (gConfigReader.BigPicture())
-				{
-					ID3D11Texture2D* encoderTexture = NULL;
-					if (frame_index_ % 2 == 0)
-					{
-						encoderTexture = compositor.Get2to1(Eye::kLeft);
-					}
-					else
-					{
-						encoderTexture = compositor.Get2to1(Eye::kRight);
-					}
-					D3D11_TEXTURE2D_DESC desc;
-					encoderTexture->GetDesc(&desc);
-
-
-					pContext->CopySubresourceRegion(split_texture,
-						0, 0, 0, 0
-						, encoderTexture, 0, nullptr);
-
-				}
-
-			}
-			D3DHelper::ReleaseMutex(pKeyedMutex);
-		};
-
-		compositor.AddSplitRenderIndex();
-	}
-	//以下是深度检测 
-	if (gConfigReader.GetDepthComputeValue() == 1)
-	{
-		if (depth_inedx_ % 2 == 0)
-		{
-			ID3D11DeviceContext* pContext;
-			d3d11device_->GetImmediateContext(&pContext);
-			ID3D11Texture2D* left_shared_texture = NULL;
-			ID3D11Texture2D* right_shared_texture = NULL;
-			left_shared_texture = compositor.GetSharedTexture(Eye::kLeft);
-			right_shared_texture = compositor.GetSharedTexture(Eye::kRight);
-			IDXGIKeyedMutex* pKeyedMutex = NULL;
-			pKeyedMutex = D3DHelper::AcquireMutexByTexture(left_shared_texture);
-			if (pKeyedMutex != NULL)
-			{
-				if (pKeyedMutex->AcquireSync(0, 10) == S_OK)
-				{
-					if (gConfigReader.BigPicture())
-					{
-						ID3D11Texture2D* encoderTexture = NULL;
-						if (frame_index_ % 2 == 0)
-						{
-							encoderTexture = compositor.Get2to1(Eye::kLeft);
-						}
-						else
-						{
-							encoderTexture = compositor.Get2to1(Eye::kRight);
-						}
-						D3D11_TEXTURE2D_DESC desc;
-						encoderTexture->GetDesc(&desc);
-
-						D3D11_BOX box;
-						box.left = 0;
-						box.right = desc.Width / 2;
-						box.top = 0;
-						box.bottom = desc.Height;
-						box.front = 0;
-						box.back = 1;
-						pContext->CopySubresourceRegion(left_shared_texture,
-							0, 0, 0, 0
-							, encoderTexture, 0, &box);
-					}
-					else
-					{
-						pContext->CopyResource(left_shared_texture, leftTexture);
-						pContext->Flush();
-					}
-
-				}
-				D3DHelper::ReleaseMutex(pKeyedMutex);
-			};
-
-			pKeyedMutex = D3DHelper::AcquireMutexByTexture(right_shared_texture);
-			if (pKeyedMutex != NULL)
-			{
-				if (pKeyedMutex->AcquireSync(0, 10) == S_OK)
-				{
-					if (gConfigReader.BigPicture())
-					{
-						ID3D11Texture2D* encoderTexture = NULL;
-						if (frame_index_ % 2 == 0)
-						{
-							encoderTexture = compositor.Get2to1(Eye::kLeft);
-						}
-						else
-						{
-							encoderTexture = compositor.Get2to1(Eye::kRight);
-						}
-						D3D11_TEXTURE2D_DESC desc;
-						encoderTexture->GetDesc(&desc);
-
-						D3D11_BOX box;
-						box.left = desc.Width / 2;
-						box.right = desc.Width;
-						box.top = 0;
-						box.bottom = desc.Height;
-						box.front = 0;
-						box.back = 1;
-						pContext->CopySubresourceRegion(right_shared_texture,
-							0, 0, 0, 0
-							, encoderTexture, 0, &box);
-					}
-					else
-					{
-						pContext->CopyResource(right_shared_texture, rightTexture);
-						pContext->Flush();
-					}
-
-				}
-				D3DHelper::ReleaseMutex(pKeyedMutex);
-			}
-			if (gLog)
-			{
-				uint64_t CopyEnd = RVR::nowInUs();
-				RVR_LOG_A("copy left and right trace time:%f", float(CopyEnd - CopyStart) / 1000.0f);
-			}
-			PostThreadMessage(mDepthCalcThreadId, MSG_DEPTH, NULL, NULL);
-		}
-
-		depth_inedx_++;
-	}
-	else
-	{
-		SetDetph_(200);
-	}
-
-
-	frame_index_++;
-
-	if (gConfigReader.GetSplit_() == 1)
-	{
-		return;
-	}
-
-	/////////////////////////////
-
-	int64_t add_begin = RVR::nowInNs();
-    if (SensorPasser::GetInstance()->GetNetBadMode_()==false)
-	{
-		SensorPasser::GetInstance()->AddSensorByNotifyEvent(PresentTime,17);
-		//SensorPasser::GetInstance()->AddSensorWithTimeStore();
-	}
-
-	////////////
-	int64_t add_end = RVR::nowInNs();
-	string msg = " add sensor cost =" + std::to_string((add_end - add_begin) / 1000000);
-	//RVR_LOG_A(msg.c_str());
-
-	//vr::VRServerDriverHost()->VsyncEvent(0.001);//
-	startFrameTime = RVR::nowInNs();
-	int64_t offset = 0;
-	int64_t intervalt_i64 = per_frame_ns_ - (startFrameTime - lastFrameTime);
-	if ((intervalt_i64) > 1000000)
-	{
-		int64_t sleep_begin = RVR::nowInNs();
-
-		int sleep_time = (intervalt_i64 - offset) / 1000000;
-    	if (SensorPasser::GetInstance()->GetNetBadMode_())
-		{
-			Sleep(sleep_time);
-			 
-			SensorPasser::GetInstance()->AddSensorWithTimeStore( );
-				 
-		}
-		string msg = " sleep=" + std::to_string(sleep_time) + "  intervalt_i64= " + std::to_string(intervalt_i64);
-		//RVR_LOG_A(msg.c_str());
-	}
-	startFrameTime = RVR::nowInNs();
-	lastFrameTime = startFrameTime;
-	lastPresent = PresentTime;
-	endPresent = RVR::nowInNs();
-	mCurrentRenderPose.beginGameRenderStamp = startFrameTime;
-	if (g_test_sensor)
-	{
-		return;
-	}
-
-
-	//	SensorPasser::GetInstance()->ResetNewSensorNotyfyEvent();
-	//	RVR_LOG_A("present offset=%lld",(PresentTime-lastPresent)/1000);
-		/*if( (gConfigReader.GetSmoothControllerValue() == 3 || g_test_sensor_mode == 4 || g_test_sensor_mode == 5)&&(g_test_sensor ==false) )
-		{
-			if (gConfigReader.GetAppRunValue() == 2 || gOverlayShow || gDashboardActivated || gConfigReader.GetAppRunValue() == 0)
-			{
-				SensorPasser::GetInstance()->AddSensorByNotifyEventWithSmooth(PresentTime - lastPresent);
-				SensorPasser::GetInstance()->ResetNewSensorNotyfyEvent();
-			}
-			else
-			{
-				SensorPasser::GetInstance()->AddNewSensorWithPredict(PresentTime - lastPresent);
-			}
-
-		}
-		else if(gConfigReader.GetSmoothControllerValue() == 4)
-		{
-			SensorPasser::GetInstance()->AddSensorWithTimeStore(PresentTime - lastPresent, last_render_pose.poseTimeStamp);
-		}
-		else if (gConfigReader.GetSmoothControllerValue() == 5)
-		{
-			SensorPasser::GetInstance()->AddNewSensorWithPredictAndKalmanFilter(PresentTime - lastPresent );
-		}
-		else if (gConfigReader.GetSmoothControllerValue() == 6)
-		{
-			PresentTime = RVR::nowInNs();
-			SensorPasser::GetInstance()->AddSensorByTimestamp( lastPresent);
-
-		}*/
 
 }
 int StreamingHmdDriver::GetEncodeFrameConfig(int64_t CopyStart)
@@ -2122,26 +1746,351 @@ int StreamingHmdDriver::GetEncodeFrameConfig(int64_t CopyStart)
 	return configindex;
 }
 
-RVR::RVRPoseHmdData StreamingHmdDriver::GetCurrentPose()
+RVR::RVRPoseHmdData StreamingHmdDriver::GetOutputRenderPose()
 {
 	RVR::RVRPoseHmdData ret = {0};
 	current_pose_mutex_.lock();
-	ret = mCurrentRenderPose;
+	ret = out_render_pose_;
 	current_pose_mutex_.unlock();
 	return ret;
 }
-void StreamingHmdDriver::SetCurrentPose(RVR::RVRPoseHmdData hmd_pose)
+void StreamingHmdDriver::SetOutputRenderPose(RVR::RVRPoseHmdData hmd_pose)
 {
 	 
 	current_pose_mutex_.lock();
-	memmove(&mCurrentRenderPose, &hmd_pose, sizeof(RVR::RVRPoseHmdData));
+	out_render_pose_ = hmd_pose;
+	out_render_pose_.hmdTimeStamp = hmd_pose.poseTimeStamp;
 	current_pose_mutex_.unlock();
 }
 //-----------------------------------------------------------------------------
 void StreamingHmdDriver::PostPresent()
 //-----------------------------------------------------------------------------
 {
-	 
+	countPresent++;
+	int64_t PresentTime = RVR::nowInNs();
+	//RVR_LOG_A("present cost=%f ", (PresentTime - endPresent)/1000000.f);
+	if (firstPresent < 0)
+	{
+		firstPresent = PresentTime;
+	}
+
+
+	//RVR_LOG_A("present intervalt=%f  average=%f", (PresentTime - lastPresent)/1000.f,(PresentTime-firstPresent)/countPresent/1000.f);
+	//out_render_pose_.poseRecvTime = GetTimestampUs();
+
+	
+	if (((left_encoder_init_ && right_encoder_init_) == false) && (frame_index_ == 720))
+	{
+		vr::VRServerDriverHost()->RequestRestart("Pico streaming failed to initialize,please Check whether the computer configuration meets the streaming requirements", nullptr, nullptr, nullptr);
+	}
+
+	uint64_t CopyStart = RVR::nowInNs();
+
+	last_t = CopyStart;
+	bool ret = false;
+
+
+	ID3D11Texture2D* leftTexture = NULL;
+	ID3D11Texture2D* rightTexture = NULL;
+	int configindex = 0;
+	RVR::RVRPoseHmdData current_render_pose = GetOutputRenderPose();
+	current_render_pose.beginEncodeStamp = RVR::nowInNs();
+	bool not_encode = false;
+	if (current_render_pose.hmdTimeStamp!= last_encode_hmd_timestamps_)
+	{
+		if (gConfigReader.GetSplit_() == 0)
+		{
+			if (gPluginManger.mSetPoseCachePtr != NULL)
+			{
+				current_render_pose.predictedTimeMs = GetDetph_();
+				SensorManger::GetInstance()->SaveSensor(current_render_pose);
+
+				gPluginManger.DoSetPoseCache(&current_render_pose);
+			}
+
+			configindex = GetEncodeFrameConfig(CopyStart);
+
+			mFrameConfig[configindex].timestamp = CopyStart - current_render_pose.poseRecvTime;
+			mFrameConfig[configindex].net_cost = GetInputRenderPose().net_cost;
+
+			if (gLog)
+			{
+				RVR_LOG_A("steamvr render time cost %lld ", mFrameConfig[configindex].timestamp / 1000000);
+			}
+
+		}
+		if (gConfigReader.GetNotEncodeValue() == 0)
+		{
+			if (gConfigReader.BigPicture() == 0)
+			{
+				leftTexture = compositor.Get(Eye::kLeft);
+				rightTexture = compositor.Get(Eye::kRight);
+				if (left_encoder_init_ && right_encoder_init_)
+				{
+					mLeftEnvc->QueueBuffer(leftTexture, &mFrameConfig[configindex]);
+					mRightEnvc->QueueBuffer(rightTexture, &mFrameConfig[configindex]);
+				}
+				if (gPictureTrace)
+				{
+					wstring filename = L"picture//left" + to_wstring(pictureindex) + L".jpg";
+					D3DHelper::SaveTextureToFile(d3d11device_, leftTexture, filename.c_str());
+					filename = L"picture//right" + to_wstring(pictureindex) + L".jpg";
+					D3DHelper::SaveTextureToFile(d3d11device_, rightTexture, filename.c_str());
+					pictureindex++;
+				}
+			}
+			else
+			{
+				ID3D11Texture2D* savepicture = NULL;
+				if (frame_index_ % 2 == 0)
+				{
+					ID3D11Texture2D* leftTexture = NULL;
+					leftTexture = compositor.Get2to1(Eye::kLeft);
+
+					if (left_encoder_init_)
+					{
+						if (gConfigReader.GetSplit_() == 0)
+						{
+							mLeftEnvc->QueueBuffer(leftTexture, &mFrameConfig[configindex]);
+						}
+
+					}
+					savepicture = leftTexture;
+				}
+				else
+				{
+
+					ID3D11Texture2D* rightTexture = NULL;
+					rightTexture = compositor.Get2to1(Eye::kRight);
+
+					if (right_encoder_init_)
+					{
+						if (gConfigReader.GetSplit_() == 0)
+						{
+#ifndef FORCE_HALFFPS
+							if (gConfigReader.GetSingleEncode() == 0)
+							{
+								mRightEnvc->QueueBuffer(rightTexture, &mFrameConfig[configindex]);
+							}
+							else
+							{
+								leftTexture = compositor.Get2to1(Eye::kLeft);
+								mLeftEnvc->QueueBuffer(leftTexture, &mFrameConfig[configindex]);
+							}
+#endif
+							
+						}
+					}
+					savepicture = rightTexture;
+				}
+				if (gPictureTrace)
+				{
+					wstring filename = L"picture//" + to_wstring(pictureindex) + L".jpg";
+					D3DHelper::SaveTextureToFile(d3d11device_, savepicture, filename.c_str());
+					pictureindex++;
+				}
+			}
+
+		}
+
+		if (gLog)
+		{
+			RVR_LOG_A("all render cost time:%f", float(CopyStart - current_render_pose.poseRecvTime) / 1000000.0f);
+		}
+
+		if (gConfigReader.GetSplit_() == 1)
+		{
+			ID3D11DeviceContext* pContext;
+			d3d11device_->GetImmediateContext(&pContext);
+			ID3D11Texture2D* split_texture = NULL;
+			int index = 0;
+			split_texture = compositor.GetSplitTextureForRender(index);
+			split_poses_[index] = GetOutputRenderPose();
+			IDXGIKeyedMutex* pKeyedMutex = NULL;
+			pKeyedMutex = D3DHelper::AcquireMutexByTexture(split_texture);
+			if (pKeyedMutex != NULL)
+			{
+				if (pKeyedMutex->AcquireSync(0, 10) == S_OK)
+				{
+					if (gConfigReader.BigPicture())
+					{
+						ID3D11Texture2D* encoderTexture = NULL;
+						if (frame_index_ % 2 == 0)
+						{
+							encoderTexture = compositor.Get2to1(Eye::kLeft);
+						}
+						else
+						{
+							encoderTexture = compositor.Get2to1(Eye::kRight);
+						}
+						D3D11_TEXTURE2D_DESC desc;
+						encoderTexture->GetDesc(&desc);
+
+
+						pContext->CopySubresourceRegion(split_texture,
+							0, 0, 0, 0
+							, encoderTexture, 0, nullptr);
+
+					}
+
+				}
+				D3DHelper::ReleaseMutex(pKeyedMutex);
+			};
+
+			compositor.AddSplitRenderIndex();
+		}
+		//以下是深度检测 
+		if (gConfigReader.GetDepthComputeValue() == 1)
+		{
+			if (depth_inedx_ % 2 == 0)
+			{
+				ID3D11DeviceContext* pContext;
+				d3d11device_->GetImmediateContext(&pContext);
+				ID3D11Texture2D* left_shared_texture = NULL;
+				ID3D11Texture2D* right_shared_texture = NULL;
+				left_shared_texture = compositor.GetSharedTexture(Eye::kLeft);
+				right_shared_texture = compositor.GetSharedTexture(Eye::kRight);
+				IDXGIKeyedMutex* pKeyedMutex = NULL;
+				pKeyedMutex = D3DHelper::AcquireMutexByTexture(left_shared_texture);
+				if (pKeyedMutex != NULL)
+				{
+					if (pKeyedMutex->AcquireSync(0, 10) == S_OK)
+					{
+						if (gConfigReader.BigPicture())
+						{
+							ID3D11Texture2D* encoderTexture = NULL;
+							if (frame_index_ % 2 == 0)
+							{
+								encoderTexture = compositor.Get2to1(Eye::kLeft);
+							}
+							else
+							{
+								encoderTexture = compositor.Get2to1(Eye::kRight);
+							}
+							D3D11_TEXTURE2D_DESC desc;
+							encoderTexture->GetDesc(&desc);
+
+							D3D11_BOX box;
+							box.left = 0;
+							box.right = desc.Width / 2;
+							box.top = 0;
+							box.bottom = desc.Height;
+							box.front = 0;
+							box.back = 1;
+							pContext->CopySubresourceRegion(left_shared_texture,
+								0, 0, 0, 0
+								, encoderTexture, 0, &box);
+						}
+						else
+						{
+							pContext->CopyResource(left_shared_texture, leftTexture);
+							pContext->Flush();
+						}
+
+					}
+					D3DHelper::ReleaseMutex(pKeyedMutex);
+				};
+
+				pKeyedMutex = D3DHelper::AcquireMutexByTexture(right_shared_texture);
+				if (pKeyedMutex != NULL)
+				{
+					if (pKeyedMutex->AcquireSync(0, 10) == S_OK)
+					{
+						if (gConfigReader.BigPicture())
+						{
+							ID3D11Texture2D* encoderTexture = NULL;
+							if (frame_index_ % 2 == 0)
+							{
+								encoderTexture = compositor.Get2to1(Eye::kLeft);
+							}
+							else
+							{
+								encoderTexture = compositor.Get2to1(Eye::kRight);
+							}
+							D3D11_TEXTURE2D_DESC desc;
+							encoderTexture->GetDesc(&desc);
+
+							D3D11_BOX box;
+							box.left = desc.Width / 2;
+							box.right = desc.Width;
+							box.top = 0;
+							box.bottom = desc.Height;
+							box.front = 0;
+							box.back = 1;
+							pContext->CopySubresourceRegion(right_shared_texture,
+								0, 0, 0, 0
+								, encoderTexture, 0, &box);
+						}
+						else
+						{
+							pContext->CopyResource(right_shared_texture, rightTexture);
+							pContext->Flush();
+						}
+
+					}
+					D3DHelper::ReleaseMutex(pKeyedMutex);
+				}
+				if (gLog)
+				{
+					uint64_t CopyEnd = RVR::nowInUs();
+					RVR_LOG_A("copy left and right trace time:%f", float(CopyEnd - CopyStart) / 1000.0f);
+				}
+				PostThreadMessage(mDepthCalcThreadId, MSG_DEPTH, NULL, NULL);
+			}
+
+			depth_inedx_++;
+		}
+		else
+		{
+			SetDetph_(200);
+		}
+
+		last_encode_hmd_timestamps_ = current_render_pose.hmdTimeStamp;
+		frame_index_++;
+	}
+	else
+	{
+	not_encode = true;
+	}	
+
+	if (gConfigReader.GetSplit_() == 1)
+	{
+		return;
+	}
+ 
+	int64_t add_begin = RVR::nowInNs();
+	if ((SensorPasser::GetInstance()->GetNetBadMode_() == false)&&(g_test_sensor_mode!=8))
+	{
+		SensorPasser::GetInstance()->AddSensorByNotifyEvent(PresentTime, 40);
+	}
+
+	int64_t add_end = RVR::nowInNs();
+	string msg = " add sensor cost =" + std::to_string((add_end - add_begin) / 1000000);
+	
+	startFrameTime = RVR::nowInNs();
+	int64_t offset = 1000000;
+	int64_t intervalt_i64 = per_frame_ns_ - (startFrameTime - lastFrameTime);
+	if ((intervalt_i64) > 1000000)
+	{
+		int64_t sleep_begin = RVR::nowInNs();
+
+		int sleep_time = (intervalt_i64 - offset) / 1000000;
+		if ((not_encode==false)&&(sleep_time>0))
+		{
+			Sleep(sleep_time);
+
+			string msg = "PostPresent sleep=" + std::to_string(sleep_time) + "  intervalt_i64= " + std::to_string(intervalt_i64);
+			//RVR_LOG_A(msg.c_str());
+		}
+		
+	}
+	startFrameTime = RVR::nowInNs();
+	lastFrameTime = startFrameTime;
+	lastPresent = PresentTime;
+	endPresent = RVR::nowInNs();
+	out_render_pose_.beginGameRenderStamp = startFrameTime;
+	double vsyn_offset = 0.002;
+	VRServerDriverHost()->VsyncEvent(vsyn_offset);
 	return;
 	
 }
@@ -2150,20 +2099,13 @@ void StreamingHmdDriver::PostPresent()
 
 
 //-----------------------------------------------------------------------------
-void StreamingHmdDriver::ExtractRVRPoseHmdData(RVR::RVRPoseHmdData* poseData, const vr::HmdMatrix34_t* pPose)
+void StreamingHmdDriver::SetOutputRenderPoseFromMatrix34(RVR::RVRPoseHmdData* poseData, const vr::HmdMatrix34_t* pPose)
 //-----------------------------------------------------------------------------
 {
-	/*WaitForSingleObject(poseHistoryLock, INFINITE);
-	{
-		if (!poseDataLatest.valid) {
-			poseDataLatest = *mStubInstance->GetPose();
-		}
-		*poseData = poseDataLatest;*/
+	 
 	current_pose_mutex_.lock();
-	ExtractRotation(&(poseData->rotation), pPose);
-	ExtractPosition(&(poseData->position), pPose);
+	ExtractRVRPoseHmdData(poseData, pPose);
 	current_pose_mutex_.unlock();
-	//}
-	//ReleaseMutex(poseHistoryLock);
+	 
 }
 
