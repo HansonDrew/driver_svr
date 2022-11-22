@@ -1,5 +1,5 @@
 /*
-* Copyright 2017-2019 NVIDIA Corporation.  All rights reserved.
+* Copyright 2017-2021 NVIDIA Corporation.  All rights reserved.
 *
 * Please refer to the NVIDIA end user license agreement (EULA) associated
 * with this source code for terms and conditions that govern your use of
@@ -28,15 +28,15 @@ DXGI_FORMAT GetD3D11Format(NV_ENC_BUFFER_FORMAT eBufferFormat)
         return DXGI_FORMAT_NV12;
     case NV_ENC_BUFFER_FORMAT_ARGB:
         return DXGI_FORMAT_B8G8R8A8_UNORM;
-	case NV_ENC_BUFFER_FORMAT_ABGR:
-		return DXGI_FORMAT_R8G8B8A8_UNORM;
+    case NV_ENC_BUFFER_FORMAT_ABGR:
+        return DXGI_FORMAT_R8G8B8A8_UNORM;
     default:
         return DXGI_FORMAT_UNKNOWN;
     }
 }
 
 NvEncoderD3D11::NvEncoderD3D11(ID3D11Device* pD3D11Device, uint32_t nWidth, uint32_t nHeight,
-    NV_ENC_BUFFER_FORMAT eBufferFormat,  uint32_t nExtraOutputDelay, bool bMotionEstimationOnly, bool bOutputInVideoMemory) :
+    NV_ENC_BUFFER_FORMAT eBufferFormat, uint32_t nExtraOutputDelay, bool bMotionEstimationOnly, bool bOutputInVideoMemory) :
     NvEncoder(NV_ENC_DEVICE_TYPE_DIRECTX, pD3D11Device, nWidth, nHeight, eBufferFormat, nExtraOutputDelay, bMotionEstimationOnly, bOutputInVideoMemory)
 {
     if (!pD3D11Device)
@@ -60,7 +60,7 @@ NvEncoderD3D11::NvEncoderD3D11(ID3D11Device* pD3D11Device, uint32_t nWidth, uint
     m_pD3D11Device->GetImmediateContext(&m_pD3D11DeviceContext);
 }
 
-NvEncoderD3D11::~NvEncoderD3D11() 
+NvEncoderD3D11::~NvEncoderD3D11()
 {
     ReleaseD3D11Resources();
 }
@@ -77,10 +77,9 @@ void NvEncoderD3D11::AllocateInputBuffers(int32_t numInputBuffers)
     for (int count = 0; count < numCount; count++)
     {
         std::vector<void*> inputFrames;
-		std::vector<HANDLE> inputHandles;
         for (int i = 0; i < numInputBuffers; i++)
         {
-            ID3D11Texture2D *pInputTextures = NULL;
+            ID3D11Texture2D* pInputTextures = NULL;
             D3D11_TEXTURE2D_DESC desc;
             ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
             desc.Width = GetMaxEncodeWidth();
@@ -88,28 +87,26 @@ void NvEncoderD3D11::AllocateInputBuffers(int32_t numInputBuffers)
             desc.MipLevels = 1;
             desc.ArraySize = 1;
             desc.Format = GetD3D11Format(GetPixelFormat());
-			desc.SampleDesc.Count = 1;
-			desc.Usage = D3D11_USAGE_DEFAULT;
-			if (desc.Format==NV_ENC_BUFFER_FORMAT_NV12)
-			{
-				desc.BindFlags = D3D11_BIND_RENDER_TARGET| D3D11_BIND_VIDEO_ENCODER| D3D11_BIND_SHADER_RESOURCE;
-				desc.BindFlags = D3D11_BIND_RENDER_TARGET;
-			} 
-			else
-			{
-				desc.BindFlags = D3D11_BIND_RENDER_TARGET;
-			}
-			
-			desc.CPUAccessFlags = 0;
+            desc.SampleDesc.Count = 1;
+            desc.Usage = D3D11_USAGE_DEFAULT;
+            if (desc.Format == NV_ENC_BUFFER_FORMAT_NV12)
+            {
+                desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_VIDEO_ENCODER | D3D11_BIND_SHADER_RESOURCE;
+                desc.BindFlags = D3D11_BIND_RENDER_TARGET;
+            }
+            else
+            {
+                desc.BindFlags = D3D11_BIND_RENDER_TARGET;
+            }
+
+            desc.CPUAccessFlags = 0;
             if (m_pD3D11Device->CreateTexture2D(&desc, NULL, &pInputTextures) != S_OK)
             {
                 NVENC_THROW_ERROR("Failed to create d3d11textures", NV_ENC_ERR_OUT_OF_MEMORY);
-                //OutputDebugString(L"pico Failed to create d3d11textures");
             }
-
             inputFrames.push_back(pInputTextures);
         }
-        RegisterInputResources(inputFrames, inputHandles,NV_ENC_INPUT_RESOURCE_TYPE_DIRECTX,
+        RegisterInputResources(inputFrames, NV_ENC_INPUT_RESOURCE_TYPE_DIRECTX,
             GetMaxEncodeWidth(), GetMaxEncodeHeight(), 0, GetPixelFormat(), count == 1 ? true : false);
     }
 }

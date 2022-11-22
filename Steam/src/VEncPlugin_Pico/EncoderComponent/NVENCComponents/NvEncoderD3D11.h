@@ -1,5 +1,5 @@
 /*
-* Copyright 2017-2019 NVIDIA Corporation.  All rights reserved.
+* Copyright 2017-2021 NVIDIA Corporation.  All rights reserved.
 *
 * Please refer to the NVIDIA end user license agreement (EULA) associated
 * with this source code for terms and conditions that govern your use of
@@ -21,10 +21,10 @@
 class NvEncoderD3D11 : public NvEncoder
 {
 public:
-    NvEncoderD3D11(ID3D11Device* pD3D11Device, uint32_t nWidth, uint32_t nHeight, NV_ENC_BUFFER_FORMAT eBufferFormat, 
-        uint32_t nExtraOutputDelay = 4, bool bMotionEstimationOnly = false,  bool bOPInVideoMemory = false);
+    NvEncoderD3D11(ID3D11Device* pD3D11Device, uint32_t nWidth, uint32_t nHeight, NV_ENC_BUFFER_FORMAT eBufferFormat,
+        uint32_t nExtraOutputDelay = 4, bool bMotionEstimationOnly = false, bool bOPInVideoMemory = false);
     virtual ~NvEncoderD3D11();
-    bool h264_=false;
+    bool h264_ = false;
     bool hevc_ = false;
 protected:
     /**
@@ -49,7 +49,7 @@ private:
     void ReleaseD3D11Resources();
 
 protected:
-    ID3D11Device *m_pD3D11Device = nullptr;
+    ID3D11Device* m_pD3D11Device = nullptr;
 
 private:
     ID3D11DeviceContext* m_pD3D11DeviceContext = nullptr;
